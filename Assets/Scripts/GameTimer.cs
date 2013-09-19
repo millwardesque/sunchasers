@@ -52,7 +52,7 @@ public class GameTimer : MonoBehaviour {
 	   int fraction = (int)(time * 100 % 100);
 	 
 	   string text = string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, fraction); 
-	   GUI.Label(new Rect(400, 25, 100, 30), text);
+	   GUI.Label(new Rect(20, 5, 100, 30), text);
 	}
 }
 
