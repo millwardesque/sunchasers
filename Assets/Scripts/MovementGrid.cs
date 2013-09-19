@@ -95,7 +95,6 @@ public class MovementGrid : MonoBehaviour {
 	/// Component.
 	/// </param>
 	public void AddToGridSquare(GridCoordinates coords, GridComponent component) {
-		Debug.Log("Added component to grid");
 		SquarePositions[coords.Row][coords.Column].Components.Add(component);
 	}
 }

@@ -9,6 +9,9 @@ public enum PlayerState {
 
 public class PlayerController : MonoBehaviour {
 	public PlayerState State = PlayerState.Upright;
+	private GameObject victoryText;
+	private GameObject defeatText;
+	
 	public float RelaxationDecreaseRate = 2.0f;
 	
 	private float relaxation = 0;
@@ -43,6 +46,12 @@ public class PlayerController : MonoBehaviour {
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid");
 		movementGridScript = movementGrid.GetComponent<MovementGrid>();
 		CurrentSquare = movementGridScript.SquarePositions[0][0];
+		victoryText = GameObject.Find("Victory Text");
+		victoryText.SetActive(false);
+		defeatText = GameObject.Find("Defeat Text");
+		defeatText.SetActive(false);
+		
+		MessageManager.Instance.RegisterListener(new Listener("GameTimerElapsed", gameObject, "OnGameTimerElapsed"));
 	}
 	
 	/// <summary>
@@ -100,6 +109,7 @@ public class PlayerController : MonoBehaviour {
 				}
 			}
 			
+			Bladder += BladderIncreaseRate * Time.deltaTime;
 			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		}
 		else if (State == PlayerState.InChair) {
@@ -127,8 +137,9 @@ public class PlayerController : MonoBehaviour {
 			}
 		}
 		
-		Relaxation = Mathf.Clamp(Relaxation, 0.0f, 100.0f);
-		Bladder += BladderIncreaseRate * Time.deltaTime;
+		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
+			victoryText.SetActive(true);
+		}
 	}
 	
 	/// <summary>
@@ -173,5 +184,17 @@ public class PlayerController : MonoBehaviour {
 		float newY = movementGrid.transform.position.y + (float)currentSquare.Y;
 		Vector3 newPosition = new Vector3(newX, newY, transform.position.z);
 		transform.position = newPosition;
+	}
+	
+	/// <summary>
+	/// Called when the game timer elapsed event.
+	/// </summary>
+	/// <param name='message'>
+	/// Message.
+	/// </param>
+	public void OnGameTimerElapsed(Message message) {
+		if (Object.ReferenceEquals(message.MessageSource, GameObject.FindGameObjectWithTag("World"))) {
+			defeatText.SetActive(true);
+		}
 	}
 }
