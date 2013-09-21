@@ -9,8 +9,12 @@ public enum PlayerState {
 
 public class PlayerController : MonoBehaviour {
 	public PlayerState State = PlayerState.Upright;
+	private bool isRunning = false;
 	private GameObject victoryText;
 	private GameObject defeatText;
+	
+	private Score score = new Score();
+	private GameObject world;
 	
 	public float RelaxationDecreaseRate = 2.0f;
 	
@@ -39,6 +43,14 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	/// <summary>
+	/// Awake hook.
+	/// </summary>
+	void Awake() {
+		MessageManager.Instance.RegisterListener(new Listener("GameTimerElapsed", gameObject, "OnGameTimerElapsed"));
+		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
+	}
+	
+	/// <summary>
 	/// Start hook.
 	/// </summary>
 	void Start () {
@@ -51,13 +63,17 @@ public class PlayerController : MonoBehaviour {
 		defeatText = GameObject.Find("Defeat Text");
 		defeatText.SetActive(false);
 		
-		MessageManager.Instance.RegisterListener(new Listener("GameTimerElapsed", gameObject, "OnGameTimerElapsed"));
+		world = GameObject.FindGameObjectWithTag("World");
 	}
 	
 	/// <summary>
 	/// Update hook.
 	/// </summary>
 	void Update () {
+		if (!isRunning) {
+			return;
+		}
+		
 		if (State == PlayerState.Upright) {
 			if (Input.GetKeyUp(KeyCode.RightArrow)) {
 				if (currentSquare.Column + 1 < movementGridScript.NumColumns) {
@@ -138,7 +154,12 @@ public class PlayerController : MonoBehaviour {
 		}
 		
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
+			GameTimer timer = world.GetComponent<GameTimer>();
+			score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
 			victoryText.SetActive(true);
+			State = PlayerState.Upright;
+			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
+			
 		}
 	}
 	
@@ -151,6 +172,10 @@ public class PlayerController : MonoBehaviour {
 	   	
 		GUI.Label(new Rect(20, 25, 200, 30), relaxationText);
 		GUI.Label(new Rect(20, 45, 200, 30), bladderText);
+		
+		if (victoryText.activeSelf) {
+			GUI.Label(new Rect(300, 25, 200, 30), string.Format("Score: {0}", score.CalculateTotalScore()));		
+		}
 	}
 	
 	/// <summary>
@@ -195,6 +220,35 @@ public class PlayerController : MonoBehaviour {
 	public void OnGameTimerElapsed(Message message) {
 		if (Object.ReferenceEquals(message.MessageSource, GameObject.FindGameObjectWithTag("World"))) {
 			defeatText.SetActive(true);
+		}
+	}
+	
+	/// <summary>
+	/// Called when the game state changes.
+	/// </summary>
+	/// <param name='message'>
+	/// Message.
+	/// </param>
+	public void OnGameStateChange(Message message) {
+		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
+		
+		switch (realMessage.newState) {
+		case GameStateEnum.Running:
+			isRunning = true;
+			break;
+		case GameStateEnum.Paused:
+		case GameStateEnum.PlayerWon:
+		case GameStateEnum.PlayerLost:
+			isRunning = false;
+			break;
+		case GameStateEnum.WaitingToStart:
+			State = PlayerState.Upright;
+			Relaxation = 0.0f;
+			Bladder = 0.0f;
+			isRunning = false;
+			break;
+		default:
+			break;
 		}
 	}
 }

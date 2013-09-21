@@ -30,6 +30,10 @@ public class Message {
 		this.MessageName = messageName;
 		this.MessageValue = messageValue;
 	}
+	
+	public override string ToString () {
+		 return string.Format ("Name: {0} Value: {1} From: {2}", MessageName, MessageValue, MessageSource);
+	}
 }
 
 /// <summary>
@@ -95,9 +99,13 @@ public sealed class MessageManager {
 	/// </param>
 	public void SendToListeners(Message message)
 	{
+		int listenerCount = 0;
 		foreach (var recipient in listeners.FindAll(listener => listener.ListenFor == message.MessageName))  
 		{    
 		    recipient.Recipient.BroadcastMessage(recipient.RecipientMethod, message, SendMessageOptions.DontRequireReceiver);
+			listenerCount++;
 		}
+		
+		Debug.Log (string.Format ("MESSAGE <L {0}>: {1}", listenerCount, message));
 	}
 }
