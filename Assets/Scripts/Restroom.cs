@@ -4,6 +4,7 @@ using System.Collections;
 public class Restroom : GridComponent {
 	public float BladderDecreaseRate = 5.0f;
 	public float RelaxationDecreaseRate = 0.1f;
+	public float HungerIncreaseRate = 0.5f;
 	private PlayerController player;
 	
 	
@@ -15,11 +16,12 @@ public class Restroom : GridComponent {
 	}
 	
 	/// <summary>
-	/// Called when the component is activated.
+	/// Called during update whenever the component is active.
 	/// </summary>
 	public override void OnUpdate() {
 		player.Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		player.Bladder -= BladderDecreaseRate * Time.deltaTime;
+		player.Hunger += HungerIncreaseRate * Time.deltaTime;
 		if (player.Bladder <= Mathf.Epsilon) {
 			player.ChangeState(PlayerState.Upright);
 		}

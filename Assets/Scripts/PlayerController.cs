@@ -4,7 +4,8 @@ using System.Collections;
 public enum PlayerState {
 	Upright,
 	InChair,
-	InRestroom
+	InRestroom,
+	InSnackBar,
 }
 
 public class PlayerController : MonoBehaviour {
@@ -16,8 +17,7 @@ public class PlayerController : MonoBehaviour {
 	private Score score = new Score();
 	private GameObject world;
 	
-	public float RelaxationDecreaseRate = 2.0f;
-	
+	// Player traits.
 	private float relaxation = 0;
 	public float Relaxation {
 		get { return relaxation; }
@@ -29,8 +29,19 @@ public class PlayerController : MonoBehaviour {
 		get { return bladder; }
 		set { bladder = Mathf.Clamp (value, 0.0f, 100.0f); }
 	}
-	public float BladderIncreaseRate = 1.5f;
 	
+	private float hunger = 0;
+	public float Hunger {
+		get { return hunger; }
+		set { hunger = Mathf.Clamp (value, 0.0f, 100.0f); }
+	}
+	
+	// Upright rate of change for player traits (in units / second).
+	public float RelaxationDecreaseRate = 2.0f;
+	public float BladderIncreaseRate = 1.5f;
+	public float HungerIncreaseRate = 0.5f;
+	
+	// The grid on which the player moves.
 	private GameObject movementGrid = null;
 	private MovementGrid movementGridScript = null;
 	private GridSquare currentSquare = null;
@@ -76,83 +87,68 @@ public class PlayerController : MonoBehaviour {
 		
 		if (State == PlayerState.Upright) {
 			if (Input.GetKeyUp(KeyCode.RightArrow)) {
-				if (currentSquare.Column + 1 < movementGridScript.NumColumns) {
-					var newSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
-					if (newSquare.IsTraversable) {
-						CurrentSquare = newSquare;
-					}
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
 				}
 			}
 			
 			if (Input.GetKeyUp(KeyCode.LeftArrow)) {
-				if (currentSquare.Column - 1 >= 0) {
-					var newSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
-					if (newSquare.IsTraversable) {
-						CurrentSquare = newSquare;
-					}
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
 				}
 			}
 			
 			if (Input.GetKeyUp(KeyCode.UpArrow)) {
-				if (currentSquare.Row + 1 < movementGridScript.NumRows) {
-					var newSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
-					if (newSquare.IsTraversable) {
-						CurrentSquare = newSquare;
-					}
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
 				}
 			}
 			
 			if (Input.GetKeyUp(KeyCode.DownArrow)) {
-				if (currentSquare.Row - 1 >= 0) {
-					var newSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
-					if (newSquare.IsTraversable) {
-						CurrentSquare = newSquare;
-					}
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
 				}
 			}
 			
+			// See if the player landed on any items.
+			if (CurrentSquare.Consumable) {
+				CurrentSquare.Consumable.OnUse();
+				GameObject.Destroy(CurrentSquare.Consumable.gameObject);
+				CurrentSquare.Consumable = null;
+			}
+			
+			// See if the player is trying to enter a building.
 			if (Input.GetKeyUp(KeyCode.Space)) {
-				if (currentSquare.Components.Count > 0) {
-					for (int i = 0; i < currentSquare.Components.Count; ++i) {
-						GridComponent component = currentSquare.Components[i];
-						if (component is Restroom) {
-							ChangeState(PlayerState.InRestroom);
-						}
-						else if (component is Chair) {
-							ChangeState (PlayerState.InChair);	
-						}
+				if (currentSquare.Component) {
+					if (currentSquare.Component is Restroom) {
+						ChangeState(PlayerState.InRestroom);
+					}
+					else if (currentSquare.Component is Chair) {
+						ChangeState (PlayerState.InChair);	
+					}
+					else if (currentSquare.Component is SnackBar) {
+						ChangeState (PlayerState.InSnackBar);	
 					}
 				}
 			}
 			
 			Bladder += BladderIncreaseRate * Time.deltaTime;
+			Hunger += HungerIncreaseRate * Time.deltaTime;
 			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		}
-		else if (State == PlayerState.InChair) {
-			if (Input.GetKeyUp(KeyCode.Space)) {
-				ChangeState(PlayerState.Upright);
-			}	
+		else if (State == PlayerState.InChair ||
+				 State == PlayerState.InRestroom ||
+				 State == PlayerState.InSnackBar) {
 			
-			for (int i = 0; i < currentSquare.Components.Count; ++i) {
-				GridComponent component = currentSquare.Components[i];
-				if (component is Chair) {
-					component.OnUpdate();
-				}
-			}
-		}
-		else if (State == PlayerState.InRestroom) {
 			if (Input.GetKeyUp(KeyCode.Space)) {
 				ChangeState(PlayerState.Upright);
 			}
-			
-			for (int i = 0; i < currentSquare.Components.Count; ++i) {
-				GridComponent component = currentSquare.Components[i];
-				if (component is Restroom) {
-					component.OnUpdate();
-				}
+			else if (currentSquare.Component) {				
+				currentSquare.Component.OnUpdate();
 			}
 		}
 		
+		// Check for a win condition
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
@@ -167,11 +163,13 @@ public class PlayerController : MonoBehaviour {
 	/// OnGUI hook.
 	/// </summary>
 	void OnGUI () {	 
-		string relaxationText = string.Format("Relaxation: {0:00.0}%", Relaxation);
-		string bladderText = string.Format("Bladder: {0:00.0}%", Bladder);
+		string relaxationText = string.Format("Relaxation: {0:00}%", Relaxation);
+		string bladderText = string.Format("Bladder: {0:00}%", Bladder);
+		string hungerText = string.Format ("Hunger: {0:00}%", Hunger);
 	   	
 		GUI.Label(new Rect(20, 25, 200, 30), relaxationText);
 		GUI.Label(new Rect(20, 45, 200, 30), bladderText);
+		GUI.Label(new Rect(20, 65, 200, 30), hungerText);
 		
 		if (victoryText.activeSelf) {
 			GUI.Label(new Rect(300, 25, 200, 30), string.Format("Score: {0}", score.CalculateTotalScore()));		
@@ -191,11 +189,11 @@ public class PlayerController : MonoBehaviour {
 		else if (State == PlayerState.InChair && newState == PlayerState.Upright) {
 			transform.Translate(new Vector3(0.0f, -1.0f));
 		}
-		else if (newState == PlayerState.InRestroom) {
-			GetComponent<MeshRenderer>().enabled = false;
+		else if ((State == PlayerState.InRestroom || State == PlayerState.InSnackBar) && newState == PlayerState.Upright) {
+			GetComponent<MeshRenderer>().enabled = true;
 		}
-		else if (State == PlayerState.InRestroom) {
-			GetComponent<MeshRenderer>().enabled = true;	
+		else if (newState == PlayerState.InRestroom || newState == PlayerState.InSnackBar) {
+			GetComponent<MeshRenderer>().enabled = false;
 		}
 		
 		State = newState;
@@ -219,6 +217,7 @@ public class PlayerController : MonoBehaviour {
 	/// </param>
 	public void OnGameTimerElapsed(Message message) {
 		if (Object.ReferenceEquals(message.MessageSource, GameObject.FindGameObjectWithTag("World"))) {
+			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 			defeatText.SetActive(true);
 		}
 	}

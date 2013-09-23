@@ -57,11 +57,11 @@ public class GameTimer : MonoBehaviour {
 	/// </summary>
 	void OnGUI ()
 	{
-	   int minutes = (int)(time / 60);
-	   int seconds = (int)(time) % 60;
-	   int fraction = (int)(time * 100 % 100);
+		float timeRemaining = duration - time;
+	    int minutes = (int)(timeRemaining / 60);
+	    int seconds = (int)(timeRemaining) % 60;
 	 
-	   string text = string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, fraction); 
+	   string text = string.Format("{0:00}:{1:00}", minutes, seconds); 
 	   GUI.Label(new Rect(20, 5, 100, 30), text);
 	}
 	

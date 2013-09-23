@@ -10,7 +10,7 @@ public class GridComponent : MonoBehaviour {
 		movementGridScript = GameObject.FindGameObjectWithTag("Movement Grid").GetComponent<MovementGrid>();
 		
 		for (int i = 0; i < EntryPoints.Length; ++i) {
-			movementGridScript.AddToGridSquare(EntryPoints[i], this);
+			movementGridScript.SetComponent(EntryPoints[i], this);
 		}
 		
 		// Let subclasses initialize too.
@@ -18,11 +18,6 @@ public class GridComponent : MonoBehaviour {
 	}
 	
 	protected virtual void OnStart() { }
-	
-	/// <summary>
-	/// Called when the component is activated.
-	/// </summary>
-	public virtual void OnActivate() { }
 	
 	/// <summary>
 	/// Called when the component is active during the Unity Update hook.

@@ -8,7 +8,7 @@ public class GridCoordinates {
 	public int Column;
 	
 	public override string ToString() {
-		return "R: " + Row + " C: " + Column;
+		return string.Format ("R: {0} C: {1}", Row, Column);
 	}
 }
 
@@ -17,7 +17,8 @@ public class GridSquare{
 	public float X;
 	public float Y;
 	public bool IsTraversable;
-	public List<GridComponent> Components = new List<GridComponent>();
+	public GridComponent Component = null;
+	public GridConsumable Consumable = null;
 	
 	public int Row {
 		get { return GridCoords.Row; }
@@ -46,7 +47,7 @@ public class GridSquare{
 	}
 	
 	public override string ToString() {
-		return GridCoords + " X: " + X + " Y: " + Y + " T: " + IsTraversable;
+		return string.Format ("{0} X: {1} Y: {2} T: {3}", GridCoords, X, Y, IsTraversable);
 	}
 }
 
@@ -86,7 +87,7 @@ public class MovementGrid : MonoBehaviour {
 	}
 	
 	/// <summary>
-	/// Adds a GridComponent to a grid square.
+	/// Sets theGridComponent for a grid square.
 	/// </summary>
 	/// <param name='coords'>
 	/// Coords.
@@ -94,7 +95,41 @@ public class MovementGrid : MonoBehaviour {
 	/// <param name='component'>
 	/// Component.
 	/// </param>
-	public void AddToGridSquare(GridCoordinates coords, GridComponent component) {
-		SquarePositions[coords.Row][coords.Column].Components.Add(component);
+	public void SetComponent(GridCoordinates coords, GridComponent component) {
+		SquarePositions[coords.Row][coords.Column].Component = component;
+	}
+	
+	/// <summary>
+	/// Assigns a consumable to a square.
+	/// </summary>
+	/// <param name='coords'>
+	/// Coords.
+	/// </param>
+	/// <param name='consumable'>
+	/// Consumable.
+	/// </param>
+	public void SetConsumable(GridCoordinates coords, GridConsumable consumable) {
+		SquarePositions[coords.Row][coords.Column].Consumable = consumable;	
+	}
+	
+	/// <summary>
+	/// Determines whether a grid square is traversable
+	/// </summary>
+	/// <returns>
+	/// <c>true</c> if the square is traversable, otherwise <c>false</c>. If no square is found, false is returned.
+	/// </returns>
+	/// <param name='row'>
+	/// The row number.
+	/// </param>
+	/// <param name='column'>
+	/// The column number.
+	/// </param>Che
+	public bool IsTraversableSquare(int row, int column) {
+		if (column < NumColumns && column >= 0 && row < NumRows && row >= 0) {
+			return SquarePositions[row][column].IsTraversable;
+		}
+		else {
+			return false;
+		}
 	}
 }
