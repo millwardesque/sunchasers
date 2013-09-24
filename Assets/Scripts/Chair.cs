@@ -20,17 +20,7 @@ public class Chair : GridComponent {
 	/// </summary>
 	public override void OnUpdate() {
 		player.Relaxation += RelaxationIncreaseRate * Time.deltaTime;
-		
-		player.Hunger += HungerIncreaseRate * Time.deltaTime;
-		if (Mathf.Abs(player.Hunger - 100.0f) <= Mathf.Epsilon) {
-			player.Relaxation = 0.0f;
-			player.ChangeState(PlayerState.Upright);
-		}
-		
+		player.Hunger += HungerIncreaseRate * Time.deltaTime;		
 		player.Bladder += BladderIncreaseRate * Time.deltaTime;
-		if (Mathf.Abs(player.Bladder - 100.0f) <= Mathf.Epsilon) {
-			player.Relaxation = 0.0f;
-			player.ChangeState(PlayerState.Upright);
-		}
 	}
 }

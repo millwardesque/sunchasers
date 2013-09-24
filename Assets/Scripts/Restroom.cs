@@ -22,6 +22,7 @@ public class Restroom : GridComponent {
 		player.Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		player.Bladder -= BladderDecreaseRate * Time.deltaTime;
 		player.Hunger += HungerIncreaseRate * Time.deltaTime;
+		
 		if (player.Bladder <= Mathf.Epsilon) {
 			player.ChangeState(PlayerState.Upright);
 		}

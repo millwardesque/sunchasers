@@ -148,7 +148,20 @@ public class PlayerController : MonoBehaviour {
 			}
 		}
 		
-		// Check for a win condition
+		
+		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon) {
+			Relaxation = 0.0f;
+			if (State == PlayerState.InChair) {
+				ChangeState(PlayerState.Upright);
+			}
+		}
+		if (Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
+			Relaxation = 0.0f;
+			
+			if (State == PlayerState.InChair) {
+				ChangeState(PlayerState.Upright);
+			}
+		}
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));

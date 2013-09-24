@@ -22,6 +22,7 @@ public class SnackBar : GridComponent {
 		player.Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		player.Bladder += BladderIncreaseRate * Time.deltaTime;
 		player.Hunger -= HungerDecreaseRate * Time.deltaTime;
+		
 		if (player.Hunger <= Mathf.Epsilon) {
 			player.ChangeState(PlayerState.Upright);
 		}

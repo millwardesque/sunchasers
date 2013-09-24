@@ -7,6 +7,12 @@ public class GridCoordinates {
 	public int Row;
 	public int Column;
 	
+	public GridCoordinates() { }
+	public GridCoordinates(int row, int column) {
+		Row = row;
+		Column = column;
+	}
+	
 	public override string ToString() {
 		return string.Format ("R: {0} C: {1}", Row, Column);
 	}
