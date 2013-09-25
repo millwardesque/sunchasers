@@ -1,35 +1,36 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Sunrise : MonoBehaviour {
+public class SkyColour : MonoBehaviour {
+	tk2dSprite skySprite;
 	GameTimer timer;
-	public float TargetHeight = 28.0f;
-	float changePerSecond;
 	bool isRunning = false;
 	
 	/// <summary>
 	/// Awake hook.
 	/// </summary>
 	void Awake() {
-		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
+		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));	
 	}
 	
 	// Use this for initialization
 	void Start () {
+		skySprite = gameObject.GetComponent<tk2dSprite>();
 		timer = GameObject.FindGameObjectWithTag("World").GetComponent<GameTimer>();
-		changePerSecond = TargetHeight / (timer.duration * 0.5f);
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		if (isRunning) {
-			float direction = timer.Elapsed() / timer.duration < 0.5f ? 1.0f : -1.0f;
-			float change = Time.deltaTime * direction * changePerSecond;
+			float change = Time.deltaTime / 100.0f;
+			if (timer.Elapsed() / timer.duration > 0.5f) {
+				change *= -1.0f;	
+			}
 			
-			transform.Translate(new Vector3(0, change, 0));
+			skySprite.color = new Color(skySprite.color.r + change, skySprite.color.g + change, skySprite.color.b + change);
 		}
 	}
-	
+		
 	/// <summary>
 	/// Called when the game state changes.
 	/// </summary>

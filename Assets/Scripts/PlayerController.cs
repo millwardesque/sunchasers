@@ -1,16 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum PlayerState {
-	Upright,
-	InChair,
-	InRestroom,
-	InSnackBar,
-}
-
-public class PlayerController : MonoBehaviour {
-	public PlayerState State = PlayerState.Upright;
-	private bool isRunning = false;
+public class PlayerController : Actor {
 	private GameObject victoryText;
 	private GameObject defeatText;
 	
@@ -41,34 +32,17 @@ public class PlayerController : MonoBehaviour {
 	public float BladderIncreaseRate = 1.5f;
 	public float HungerIncreaseRate = 0.5f;
 	
-	// The grid on which the player moves.
-	private GameObject movementGrid = null;
-	private MovementGrid movementGridScript = null;
-	private GridSquare currentSquare = null;
-	public GridSquare CurrentSquare {
-		get { return currentSquare; }
-		set { 
-			currentSquare = value;
-			CalculateNewPosition();
-		}
-	}
-	
 	/// <summary>
 	/// Awake hook.
 	/// </summary>
-	void Awake() {
+	protected override void OnAwake() {
 		MessageManager.Instance.RegisterListener(new Listener("GameTimerElapsed", gameObject, "OnGameTimerElapsed"));
-		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
 	}
 	
 	/// <summary>
 	/// Start hook.
 	/// </summary>
-	void Start () {
-		// Get the movement script and set the starting square.
-		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid");
-		movementGridScript = movementGrid.GetComponent<MovementGrid>();
-		CurrentSquare = movementGridScript.SquarePositions[0][0];
+	protected override void OnStart () {		
 		victoryText = GameObject.Find("Victory Text");
 		victoryText.SetActive(false);
 		defeatText = GameObject.Find("Defeat Text");
@@ -85,7 +59,7 @@ public class PlayerController : MonoBehaviour {
 			return;
 		}
 		
-		if (State == PlayerState.Upright) {
+		if (State == ActorState.Upright) {
 			if (Input.GetKeyUp(KeyCode.RightArrow)) {
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
@@ -121,13 +95,13 @@ public class PlayerController : MonoBehaviour {
 			if (Input.GetKeyUp(KeyCode.Space)) {
 				if (currentSquare.Component) {
 					if (currentSquare.Component is Restroom) {
-						ChangeState(PlayerState.InRestroom);
+						ChangeState(ActorState.InRestroom);
 					}
 					else if (currentSquare.Component is Chair) {
-						ChangeState (PlayerState.InChair);	
+						ChangeState (ActorState.InChair);	
 					}
 					else if (currentSquare.Component is SnackBar) {
-						ChangeState (PlayerState.InSnackBar);	
+						ChangeState (ActorState.InSnackBar);	
 					}
 				}
 			}
@@ -136,12 +110,12 @@ public class PlayerController : MonoBehaviour {
 			Hunger += HungerIncreaseRate * Time.deltaTime;
 			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		}
-		else if (State == PlayerState.InChair ||
-				 State == PlayerState.InRestroom ||
-				 State == PlayerState.InSnackBar) {
+		else if (State == ActorState.InChair ||
+				 State == ActorState.InRestroom ||
+				 State == ActorState.InSnackBar) {
 			
 			if (Input.GetKeyUp(KeyCode.Space)) {
-				ChangeState(PlayerState.Upright);
+				ChangeState(ActorState.Upright);
 			}
 			else if (currentSquare.Component) {				
 				currentSquare.Component.OnUpdate();
@@ -151,24 +125,23 @@ public class PlayerController : MonoBehaviour {
 		
 		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon) {
 			Relaxation = 0.0f;
-			if (State == PlayerState.InChair) {
-				ChangeState(PlayerState.Upright);
+			if (State == ActorState.InChair) {
+				ChangeState(ActorState.Upright);
 			}
 		}
 		if (Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
 			Relaxation = 0.0f;
 			
-			if (State == PlayerState.InChair) {
-				ChangeState(PlayerState.Upright);
+			if (State == ActorState.InChair) {
+				ChangeState(ActorState.Upright);
 			}
 		}
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
 			victoryText.SetActive(true);
-			State = PlayerState.Upright;
+			State = ActorState.Upright;
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
-			
 		}
 	}
 	
@@ -190,38 +163,15 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	/// <summary>
-	/// Changes the player's state.
+	/// Changes the actor's state.
 	/// </summary>
 	/// <param name='newState'>
 	/// New state.
 	/// </param>
-	public void ChangeState(PlayerState newState) {
-		if (State == PlayerState.Upright && newState == PlayerState.InChair) {
-			transform.Translate(new Vector3(0.0f, 1.0f));
-		}
-		else if (State == PlayerState.InChair && newState == PlayerState.Upright) {
-			transform.Translate(new Vector3(0.0f, -1.0f));
-		}
-		else if ((State == PlayerState.InRestroom || State == PlayerState.InSnackBar) && newState == PlayerState.Upright) {
-			GetComponent<MeshRenderer>().enabled = true;
-		}
-		else if (newState == PlayerState.InRestroom || newState == PlayerState.InSnackBar) {
-			GetComponent<MeshRenderer>().enabled = false;
-		}
+	public override void ChangeState(ActorState newState) {
+		base.ChangeState(newState);
+	}
 		
-		State = newState;
-	}
-	
-	/// <summary>
-	/// Calculates the new position based on the grid-square the player current occupies.
-	/// </summary>
-	void CalculateNewPosition() {
-		float newX = movementGrid.transform.position.x + (float)currentSquare.X;
-		float newY = movementGrid.transform.position.y + (float)currentSquare.Y;
-		Vector3 newPosition = new Vector3(newX, newY, transform.position.z);
-		transform.position = newPosition;
-	}
-	
 	/// <summary>
 	/// Called when the game timer elapsed event.
 	/// </summary>
@@ -232,35 +182,6 @@ public class PlayerController : MonoBehaviour {
 		if (Object.ReferenceEquals(message.MessageSource, GameObject.FindGameObjectWithTag("World"))) {
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 			defeatText.SetActive(true);
-		}
-	}
-	
-	/// <summary>
-	/// Called when the game state changes.
-	/// </summary>
-	/// <param name='message'>
-	/// Message.
-	/// </param>
-	public void OnGameStateChange(Message message) {
-		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
-		
-		switch (realMessage.newState) {
-		case GameStateEnum.Running:
-			isRunning = true;
-			break;
-		case GameStateEnum.Paused:
-		case GameStateEnum.PlayerWon:
-		case GameStateEnum.PlayerLost:
-			isRunning = false;
-			break;
-		case GameStateEnum.WaitingToStart:
-			State = PlayerState.Upright;
-			Relaxation = 0.0f;
-			Bladder = 0.0f;
-			isRunning = false;
-			break;
-		default:
-			break;
 		}
 	}
 }

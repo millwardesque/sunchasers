@@ -24,7 +24,7 @@ public class SnackBar : GridComponent {
 		player.Hunger -= HungerDecreaseRate * Time.deltaTime;
 		
 		if (player.Hunger <= Mathf.Epsilon) {
-			player.ChangeState(PlayerState.Upright);
+			player.ChangeState(ActorState.Upright);
 		}
 	}
 }

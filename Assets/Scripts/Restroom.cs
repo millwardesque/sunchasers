@@ -24,7 +24,7 @@ public class Restroom : GridComponent {
 		player.Hunger += HungerIncreaseRate * Time.deltaTime;
 		
 		if (player.Bladder <= Mathf.Epsilon) {
-			player.ChangeState(PlayerState.Upright);
+			player.ChangeState(ActorState.Upright);
 		}
 	}
 }

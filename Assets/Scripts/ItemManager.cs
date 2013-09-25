@@ -48,13 +48,13 @@ public class ItemManager : MonoBehaviour {
 				Debug.Log("Couldn't find a valid square for the new item. Bailing.");
 				return;
 			}
-			GridSquare newGridSquare = potentialSquares[Random.Range(0, potentialSquares.Count - 1)];
+			GridSquare newGridSquare = potentialSquares[Random.Range(0, potentialSquares.Count)];
 			
 			// Position the item on-screen.
 			Vector3 newPosition = new Vector3(newGridSquare.Column * movementGrid.GridSquareWidth, newGridSquare.Row * movementGrid.GridSquareHeight, 0.0f);
 			
 			// Create a new item.
-			int itemIndex = Random.Range(0, ItemTypes.Length - 1);
+			int itemIndex = Random.Range(0, ItemTypes.Length);
 			GameObject newItem = (GameObject)GameObject.Instantiate(ItemTypes[itemIndex]);
 			newItem.transform.parent = movementGrid.gameObject.transform;
 			newItem.GetComponent<GridConsumable>().Location = new GridCoordinates(newGridSquare.Row, newGridSquare.Column);
