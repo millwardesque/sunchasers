@@ -2,10 +2,11 @@
 using System.Collections;
 
 public class NPC : Actor {
-	float moveThreshold = 1.0f;
+	public float MoveThreshold = 0.25f;
 	float timeUntilMove = 0.0f;
 	int directionX = 0;
 	int directionY = 0;
+	bool justGotUp = false;
 	
 	/// <summary>
 	/// Start hook.
@@ -32,13 +33,49 @@ public class NPC : Actor {
 	/// Update hook.
 	/// </summary>
 	void Update() {
-		if (State == ActorState.Upright) {
-			timeUntilMove -= Time.deltaTime;
-			
-			if (timeUntilMove <= float.Epsilon) {
-				timeUntilMove = moveThreshold;
-				FindNewSquare();
-			}	
+		if (!isRunning) {
+			return;
+		}
+		timeUntilMove -= Time.deltaTime;
+		if (timeUntilMove <= float.Epsilon) {
+			timeUntilMove = MoveThreshold;
+			if (State == ActorState.Upright) {
+				if (!justGotUp && CurrentSquare.Component is Chair && 	// Kick the player out of the chair.
+					(CurrentSquare.Occupier && CurrentSquare.Occupier.CompareTag("Player"))) {
+					CurrentSquare.Occupier.ChangeState(ActorState.Upright);
+					ChangeState(ActorState.InChair);
+					
+				}
+				else if (!justGotUp && CurrentSquare.Component is Chair && !CurrentSquare.IsOccupied()) { // Take the unoccupied chair.
+					ChangeState(ActorState.InChair);
+				}
+				else if (!justGotUp && CurrentSquare.Component is Restroom && !CurrentSquare.IsOccupied()) { // Use the restroom.
+					ChangeState(ActorState.InRestroom);
+				}
+				else if (!justGotUp && CurrentSquare.Component is SnackBar && !CurrentSquare.IsOccupied()) { // Use the snackbar.
+					ChangeState(ActorState.InSnackBar);
+				}
+				else { // Otherwise, move.
+					FindNewSquare();
+					justGotUp = false;
+				}	
+			}
+			else if (State == ActorState.InChair) {
+				float probabilityOfGettingUp = 0.1f;
+				float value = Random.Range (0.0f, 1.0f);
+				if (value < probabilityOfGettingUp) {
+					ChangeState (ActorState.Upright);
+					justGotUp = true;
+				}
+			}
+			else if (State == ActorState.InRestroom || State == ActorState.InSnackBar) {
+				float probabilityOfLeaving = 0.3f;
+				float value = Random.Range (0.0f, 1.0f);
+				if (value < probabilityOfLeaving) {
+					ChangeState (ActorState.Upright);
+					justGotUp = true;
+				}
+			}
 		}
 	}
 	
@@ -65,7 +102,7 @@ public class NPC : Actor {
 			}
 		}
 		else {
-			float changeProbability = 0.2f;
+			float changeProbability = 0.3f;
 			float value = Random.Range (0.0f, 1.0f);
 			
 			// Randomly change direction.

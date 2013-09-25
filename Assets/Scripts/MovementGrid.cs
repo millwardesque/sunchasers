@@ -25,6 +25,7 @@ public class GridSquare{
 	public bool IsTraversable;
 	public GridComponent Component = null;
 	public GridConsumable Consumable = null;
+	public Actor Occupier = null;
 	
 	public int Row {
 		get { return GridCoords.Row; }
@@ -50,6 +51,10 @@ public class GridSquare{
 		X = x;
 		Y = y;
 		IsTraversable = isTraversable;
+	}
+	
+	public bool IsOccupied() {
+		return Occupier != null; 
 	}
 	
 	public override string ToString() {

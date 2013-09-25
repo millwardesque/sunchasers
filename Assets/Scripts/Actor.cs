@@ -16,6 +16,8 @@ public enum ActorState {
 /// </summary>
 public class Actor : MonoBehaviour {
 	public ActorState State = ActorState.Upright;
+	public int StartRow = 0;
+	public int StartColumn = 0;
 	protected bool isRunning = false;
 	
 	// The grid on which the player moves.
@@ -46,7 +48,7 @@ public class Actor : MonoBehaviour {
 		// Get the movement script and set the starting square.
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid");
 		movementGridScript = movementGrid.GetComponent<MovementGrid>();
-		CurrentSquare = movementGridScript.SquarePositions[0][0];
+		CurrentSquare = movementGridScript.SquarePositions[StartRow][StartColumn];
 		
 		OnStart();
 	}
@@ -69,15 +71,19 @@ public class Actor : MonoBehaviour {
 	/// </param>
 	public virtual void ChangeState(ActorState newState) {		
 		if (State == ActorState.Upright && newState == ActorState.InChair) {
+			CurrentSquare.Occupier = this;
 			transform.Translate(new Vector3(0.0f, 1.0f));
 		}
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
+			CurrentSquare.Occupier = null;
 			transform.Translate(new Vector3(0.0f, -1.0f));
 		}
 		else if ((State == ActorState.InRestroom || State == ActorState.InSnackBar) && newState == ActorState.Upright) {
+			CurrentSquare.Occupier = null;
 			GetComponent<MeshRenderer>().enabled = true;
 		}
 		else if (newState == ActorState.InRestroom || newState == ActorState.InSnackBar) {
+			CurrentSquare.Occupier = this;
 			GetComponent<MeshRenderer>().enabled = false;
 		}
 	

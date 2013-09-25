@@ -89,15 +89,16 @@ public class PlayerController : Actor {
 				CurrentSquare.Consumable.OnUse();
 				GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 				CurrentSquare.Consumable = null;
+				score.Add (new ScoreItem(50, "Item"));
 			}
 			
 			// See if the player is trying to enter a building.
 			if (Input.GetKeyUp(KeyCode.Space)) {
 				if (currentSquare.Component) {
-					if (currentSquare.Component is Restroom) {
+					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
 						ChangeState(ActorState.InRestroom);
 					}
-					else if (currentSquare.Component is Chair) {
+					else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
 						ChangeState (ActorState.InChair);	
 					}
 					else if (currentSquare.Component is SnackBar) {
@@ -158,7 +159,7 @@ public class PlayerController : Actor {
 		GUI.Label(new Rect(20, 65, 200, 30), hungerText);
 		
 		if (victoryText.activeSelf) {
-			GUI.Label(new Rect(300, 25, 200, 30), string.Format("Score: {0}", score.CalculateTotalScore()));		
+			GUI.Label(new Rect(600, 25, 200, 30), string.Format("Score: {0}", score.CalculateTotalScore()));		
 		}
 	}
 	
