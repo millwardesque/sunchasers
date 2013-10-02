@@ -18,6 +18,56 @@ public class GridCoordinates {
 	}
 }
 
+class AStarGridSquare {
+	public GridCoordinates Coords;
+	int local_g = 10;
+	public AStarGridSquare Parent = null;
+	public GridCoordinates Target = null;
+	public bool IsTraversable = true;
+	
+	public int Row { get { return Coords.Row; } }
+	public int Column { get { return Coords.Column; } }
+	
+	public int F {
+		get { return G + H; }
+	}
+	
+	public int G {
+		get {
+			int score = local_g;
+			if (null != Parent) {
+				score += Parent.G;
+			}
+			return score;
+		}
+	}
+	
+	public int H {
+		get {
+			return (Mathf.Abs(Row - Target.Row) + Mathf.Abs (Column - Target.Column)) * 10;
+		}
+	}
+	
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AStarGridSquare"/> class.
+	/// </summary>
+	/// <param name='coords'>
+	/// Coords.
+	/// </param>
+	/// <param name='parent'>
+	/// Parent.
+	/// </param>
+	/// <param name='isTraversable'>
+	/// Is traversable.
+	/// </param>
+	public AStarGridSquare(GridCoordinates coords, GridCoordinates target, AStarGridSquare parent, bool isTraversable) {
+		Coords = coords;
+		Parent = parent;
+		Target = target;
+		IsTraversable = isTraversable;
+	}
+}
+
 public class GridSquare{
 	public GridCoordinates GridCoords = new GridCoordinates();
 	public float X;
@@ -142,5 +192,139 @@ public class MovementGrid : MonoBehaviour {
 		else {
 			return false;
 		}
+	}
+	
+	/// <summary>
+	/// Finds the path to a grid square.
+	/// </summary>
+	/// <returns>
+	/// A list of grid-squares on the path, including the start and end squares.
+	/// </returns>
+	/// <param name='start'>
+	/// The start square.
+	/// </param>
+	/// <param name='end'>
+	/// The end square.
+	/// </param>
+	public List<GridCoordinates> FindPathToSquare(GridCoordinates start, GridCoordinates end) {
+		List<AStarGridSquare> openList = new List<AStarGridSquare>();
+		List<AStarGridSquare> closedList = new List<AStarGridSquare>();
+		AStarGridSquare foundEnd = null;
+		
+		openList.Add(MakeAStarSquare(start.Row, start.Column, end, null));
+		while (openList.Count > 0) {
+			// Pop the best square.
+			AStarGridSquare currentSquare = FindBestFScore(openList);
+			closedList.Add(currentSquare);
+			openList.Remove(currentSquare);
+			
+			if (currentSquare.Row == end.Row && currentSquare.Column == end.Column) {
+				foundEnd = currentSquare;
+				break;
+			}
+			
+			List<AStarGridSquare> adjacentSquares = GetAdjacentTraversableSquares(currentSquare.Row, currentSquare.Column, end, currentSquare);
+			foreach (AStarGridSquare square in adjacentSquares) {
+				if (closedList.Find( x => x.Row == square.Row && x.Column == square.Column) == null) {
+					AStarGridSquare openSquare = openList.Find( x => x.Row == square.Row && x.Column == square.Column);
+					if (null != openSquare) {
+						if (openSquare.G >= square.G) {
+							openSquare.Parent = square;
+						}
+					}
+					else {
+						openList.Add(square);	
+					}
+				}
+			}
+		}
+		
+		if (foundEnd != null) {
+			List<GridCoordinates> path = new List<GridCoordinates>();
+			do {
+				path.Add(new GridCoordinates(foundEnd.Row, foundEnd.Column));
+				foundEnd = foundEnd.Parent;
+			} while (foundEnd.Parent != null);
+			path.Reverse();
+			return path;
+		}
+		else {				
+			return null;
+		}
+	}
+	
+	/// <summary>
+	/// Makes a new AStarSquare based on the movement grid.
+	/// </summary>
+	/// <returns>
+	/// The A star square.
+	/// </returns>
+	/// <param name='row'>
+	/// Row.
+	/// </param>
+	/// <param name='column'>
+	/// Column.
+	/// </param>
+	private AStarGridSquare MakeAStarSquare(int row, int column, GridCoordinates target, AStarGridSquare parent) {
+		if (row >= 0 && row < NumRows && column >= 0 && column < NumColumns) {
+			GridSquare square = SquarePositions[row][column];
+			return new AStarGridSquare(new GridCoordinates(row, column), target, parent, square.IsTraversable);
+		}
+		else {
+			return null;
+		}
+	}
+	
+	/// <summary>
+	/// Gets the adjacent traversable squares.
+	/// </summary>
+	/// <returns>
+	/// The adjacent squares.
+	/// </returns>
+	/// <param name='row'>
+	/// Row.
+	/// </param>
+	/// <param name='column'>
+	/// Column.
+	/// </param>
+	private List<AStarGridSquare> GetAdjacentTraversableSquares(int row, int column, GridCoordinates target, AStarGridSquare parent) {
+		List<AStarGridSquare> adjacentSquares = new List<AStarGridSquare>();
+		if (row - 1 >= 0 && IsTraversableSquare(row - 1, column)) {
+			adjacentSquares.Add(MakeAStarSquare(row - 1, column, target, parent));
+		}
+		if (row + 1 < NumRows && IsTraversableSquare(row + 1, column)) {
+			adjacentSquares.Add(MakeAStarSquare(row + 1, column, target, parent));
+		}
+		if (column - 1 >= 0 && IsTraversableSquare(row, column - 1)) {
+			adjacentSquares.Add(MakeAStarSquare(row, column - 1, target, parent));
+		}
+		if (column + 1 < NumColumns && IsTraversableSquare(row, column + 1)) {
+			adjacentSquares.Add(MakeAStarSquare(row, column + 1, target, parent));
+		}
+		
+		return adjacentSquares;
+	}
+	
+	/// <summary>
+	/// Finds the square with the best F score.
+	/// </summary>
+	/// <returns>
+	/// The best F score.
+	/// </returns>
+	/// <param name='squares'>
+	/// Squares.
+	/// </param>
+	private AStarGridSquare FindBestFScore(List<AStarGridSquare> squares) {
+		AStarGridSquare best = null;
+		Debug.Log ("Looking for F-score");
+		foreach (AStarGridSquare square in squares) {
+			Debug.Log (string.Format ("{0}: {1}", square.Coords, square.F));
+			if (best == null || square.F <= best.F) {
+					best = square;
+			}
+		}
+		
+		Debug.Log (string.Format ("Best is {0} at {1}", best.F, best.Coords	));
+		return best;
 	}
 }

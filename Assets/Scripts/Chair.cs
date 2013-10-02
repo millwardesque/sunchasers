@@ -5,7 +5,7 @@ public class Chair : GridComponent {
 	public float BladderIncreaseRate = 1.5f;
 	public float RelaxationIncreaseRate = 1.0f;
 	public float HungerIncreaseRate = 0.75f;
-	
+	public float TemperatureIncreaseRate = 2.0f;
 	private PlayerController player;
 	
 	/// <summary>
@@ -22,5 +22,6 @@ public class Chair : GridComponent {
 		player.Relaxation += RelaxationIncreaseRate * Time.deltaTime;
 		player.Hunger += HungerIncreaseRate * Time.deltaTime;		
 		player.Bladder += BladderIncreaseRate * Time.deltaTime;
+		player.Temperature += TemperatureIncreaseRate * Time.deltaTime;
 	}
 }

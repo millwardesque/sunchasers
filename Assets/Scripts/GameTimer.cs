@@ -61,8 +61,8 @@ public class GameTimer : MonoBehaviour {
 	    int minutes = (int)(timeRemaining / 60);
 	    int seconds = (int)(timeRemaining) % 60;
 	 
-	   string text = string.Format("{0:00}:{1:00}", minutes, seconds); 
-	   GUI.Label(new Rect(20, 5, 100, 30), text);
+		string text = string.Format("{0:00}:{1:00}", minutes, seconds); 
+		GUI.Label(new Rect(20, 5, 100, 30), text);
 	}
 	
 	/// <summary>

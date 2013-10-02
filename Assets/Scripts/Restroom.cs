@@ -5,6 +5,7 @@ public class Restroom : GridComponent {
 	public float BladderDecreaseRate = 5.0f;
 	public float RelaxationDecreaseRate = 0.1f;
 	public float HungerIncreaseRate = 0.5f;
+	public float TemperatureDecreaseRate = 0.5f;
 	private PlayerController player;
 	
 	
@@ -22,6 +23,7 @@ public class Restroom : GridComponent {
 		player.Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		player.Bladder -= BladderDecreaseRate * Time.deltaTime;
 		player.Hunger += HungerIncreaseRate * Time.deltaTime;
+		player.Temperature -= TemperatureDecreaseRate * Time.deltaTime;
 		
 		if (player.Bladder <= Mathf.Epsilon) {
 			player.ChangeState(ActorState.Upright);
