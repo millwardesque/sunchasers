@@ -16,6 +16,37 @@ public class GridCoordinates {
 	public override string ToString() {
 		return string.Format ("R: {0} C: {1}", Row, Column);
 	}
+	
+	/// <summary>
+	/// Gets the distance to a destination in grid squares.
+	/// </summary>
+	/// <param name='destination'>
+	/// Destination.
+	/// </param>
+	public int DistanceTo(GridCoordinates destination) {
+		return Mathf.Abs(Row - destination.Row) + Mathf.Abs(Column - destination.Column);
+	}
+	
+	public bool Equals(GridCoordinates coords) {
+		if (coords == null) {
+			return false;
+		}
+		return (Row == coords.Row && Column == coords.Column);
+	}
+	
+	public override bool Equals(System.Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		
+		GridCoordinates coords = obj as GridCoordinates;
+		return (Row == coords.Row && Column == coords.Column);
+	}
+	
+	public override int GetHashCode ()
+	{
+		return base.GetHashCode ();
+	}
 }
 
 class AStarGridSquare {
@@ -44,7 +75,7 @@ class AStarGridSquare {
 	
 	public int H {
 		get {
-			return (Mathf.Abs(Row - Target.Row) + Mathf.Abs (Column - Target.Column)) * 10;
+			return Coords.DistanceTo(Target) * 10;
 		}
 	}
 	
@@ -316,15 +347,12 @@ public class MovementGrid : MonoBehaviour {
 	/// </param>
 	private AStarGridSquare FindBestFScore(List<AStarGridSquare> squares) {
 		AStarGridSquare best = null;
-		Debug.Log ("Looking for F-score");
 		foreach (AStarGridSquare square in squares) {
-			Debug.Log (string.Format ("{0}: {1}", square.Coords, square.F));
 			if (best == null || square.F <= best.F) {
 					best = square;
 			}
 		}
 		
-		Debug.Log (string.Format ("Best is {0} at {1}", best.F, best.Coords	));
 		return best;
 	}
 }

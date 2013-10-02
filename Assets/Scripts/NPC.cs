@@ -8,28 +8,14 @@ public class NPC : Actor {
 	private List<GridCoordinates> pathToTarget = new List<GridCoordinates>();
 	
 	float timeUntilMove = 0.0f;
-	int directionX = 0;
-	int directionY = 0;
 	bool justGotUp = false;
 	
 	/// <summary>
 	/// Start hook.
 	/// </summary>
 	override protected void OnStart() {
-		// Pick a starting direction.
-		while (directionX == 0 && directionY == 0) {
-			directionX = GetRandomOffset (CurrentSquare.Column, 0, movementGridScript.NumColumns - 1);
-			directionY = GetRandomOffset (CurrentSquare.Row, 0, movementGridScript.NumRows - 1);
-			
-			// If both X and Y have a non-zero direction, pick one since the NPC can't move on angles.
-			if (directionX != 0 && directionY != 0) {
-				if (Random.Range(0, 2) == 0) {
-					directionX = 0;	
-				}
-				else {
-					directionY = 0;
-				}
-			}
+		if (TargetSquare.Equals (new GridCoordinates(-1, -1))) {
+			FindNewTarget();
 		}
 	}
 	
@@ -86,13 +72,10 @@ public class NPC : Actor {
 	/// <summary>
 	/// Finds the next square the NPC should move to.
 	/// </summary>
-	void FindNewSquare() {
-		if (pathToTarget.Count == 0 && TargetSquare.Row != -1 && TargetSquare.Column != -1 && TargetSquare.Row != CurrentSquare.Row && TargetSquare.Column != CurrentSquare.Column) {
+	void FindNewSquare() {		
+		if (pathToTarget.Count == 0) {
+			FindNewTarget();
 			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, TargetSquare);	
-			Debug.Log(string.Format ("Found path from {0} to {1}", CurrentSquare.GridCoords, TargetSquare));
-			/*foreach (GridCoordinates node in pathToTarget) {
-				Debug.Log (node);
-			} */
 		}
 		else if (pathToTarget.Count > 0) {
 			GridCoordinates nextSquare = pathToTarget[0];
@@ -102,81 +85,28 @@ public class NPC : Actor {
 		}
 	}
 	
-	/// <summary>
-	/// Finds a random square.
-	/// </summary>
-	void FindRandomSquare() {
-		if (CurrentSquare.Column + directionX > movementGridScript.NumColumns - 1 ||	// If we've hit a horizontal axis extent, change to a vertical direction.
-			CurrentSquare.Column + directionX < 0) {	
-			directionX = 0;
-			
-			// Make sure the direction isn't (0, 0).
-			while (directionY == 0) {
-				directionY = GetRandomOffset(CurrentSquare.Row, 0, movementGridScript.NumRows - 1);
-			}
-		}
-		else if (CurrentSquare.Row + directionY > movementGridScript.NumRows - 1 ||	// If we've hit a vertical axis extent, change to a horizontal direction.
-			CurrentSquare.Row + directionY < 0) {
-			directionY = 0;
-			
-			// Make sure the direction isn't (0, 0).
-			while (directionX == 0) {
-				directionX = GetRandomOffset(CurrentSquare.Column, 0, movementGridScript.NumColumns - 1);
-			}
-		}
-		else {
-			float changeProbability = 0.3f;
-			float value = Random.Range (0.0f, 1.0f);
-			
-			// Randomly change direction.
-			if (value < changeProbability) {
-				directionX = GetRandomOffset (CurrentSquare.Column, 0, movementGridScript.NumColumns - 1);
-				directionY = GetRandomOffset (CurrentSquare.Row, 0, movementGridScript.NumRows - 1);
+	void FindNewTarget() {
+		float bestScore = 0.0f;
+		GridSquare bestTarget = null;
+		
+		for (int row = 0; row < movementGridScript.NumRows; ++row) {
+			for (int column = 0; column < movementGridScript.NumColumns; ++column) {
+				GridSquare square = movementGridScript.SquarePositions[row][column];
+				float score = (float)CurrentSquare.GridCoords.DistanceTo(square.GridCoords);
 				
-				if (directionX != 0 && directionY != 0) {
-					if (Random.Range(0, 2) == 0) {
-						directionX = 0;	
-					}
-					else {
-						directionY = 0;
-					}
+				if (square.Component != null) {
+					score *= 2;
+				}
+				
+				if (score > bestScore || bestTarget == null) {
+					bestScore = score;
+					bestTarget = square;
 				}
 			}
 		}
-	
-		// Ensure the new square is actually traversable.
-		if (movementGridScript.IsTraversableSquare(currentSquare.Row + directionY, currentSquare.Column + directionX)) {
-			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + directionY][currentSquare.Column + directionX];
-		}
-	}
-	
-	/// <summary>
-	/// Calculates a random offset between -1, 0, 1 taking into account the axis size.
-	/// </summary>
-	/// <returns>
-	/// The random offset.
-	/// </returns>
-	/// <param name='current'>
-	/// The current position.
-	/// </param>
-	/// <param name='min_extent'>
-	/// The minimum extent of the axis. Usually 0.
-	/// </param>
-	/// <param name='max_extent'>
-	/// The maximum extent of the axis.
-	/// </param>
-	int GetRandomOffset(int current, int min_extent, int max_extent) {
-		int offset = 0;
-		if (current == min_extent) {
-			offset = Random.Range (0, 2);
-		}
-		else if (current == max_extent) {
-			offset = Random.Range (-1, 1);
-		}
-		else {
-			offset = Random.Range (-1, 2);
-		}
 		
-		return offset;
+		if (bestTarget != null) {
+			TargetSquare = bestTarget.GridCoords;
+		}
 	}
 }
