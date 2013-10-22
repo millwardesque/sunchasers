@@ -6,7 +6,6 @@ public class SnackBar : GridComponent {
 	public float BladderIncreaseRate = 0.5f;
 	public float RelaxationDecreaseRate = 0.1f;
 	public float HungerDecreaseRate = 3.0f;
-	public float TemperatureDecreaseRate = 0.5f;
 	private PlayerController player;
 	
 	/// <summary>
@@ -23,7 +22,6 @@ public class SnackBar : GridComponent {
 		player.Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		player.Bladder += BladderIncreaseRate * Time.deltaTime;
 		player.Hunger -= HungerDecreaseRate * Time.deltaTime;
-		player.Temperature -= TemperatureDecreaseRate * Time.deltaTime;
 		
 		if (player.Hunger <= Mathf.Epsilon) {
 			player.ChangeState(ActorState.Upright);

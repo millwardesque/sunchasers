@@ -5,7 +5,6 @@ public class ItemDrink : GridConsumable {
 	public float BladderChange= 10.0f;
 	public float RelaxationChange = 15.0f;
 	public float HungerChange = -5.0f;
-	public float TemperatureChange = -5.0f;
 	private PlayerController player;
 	
 	/// <summary>
@@ -22,6 +21,5 @@ public class ItemDrink : GridConsumable {
 		player.Relaxation += RelaxationChange;
 		player.Bladder += BladderChange;
 		player.Hunger += HungerChange;
-		player.Temperature += TemperatureChange;
 	}
 }

@@ -27,17 +27,10 @@ public class PlayerController : Actor {
 		set { hunger = Mathf.Clamp (value, 0.0f, 100.0f); }
 	}
 	
-	private float temperature = 0;
-	public float Temperature {
-		get { return temperature; }
-		set { temperature = Mathf.Clamp (value, 0.0f, 100.0f); }
-	}
-	
 	// Upright rate of change for player traits (in units / second).
 	public float RelaxationDecreaseRate = 2.0f;
 	public float BladderIncreaseRate = 1.5f;
 	public float HungerIncreaseRate = 0.5f;
-	public float TemperatureIncreaseRate = 0.25f;
 	
 	/// <summary>
 	/// Awake hook.
@@ -56,7 +49,6 @@ public class PlayerController : Actor {
 		defeatText.SetActive(false);
 		
 		world = GameObject.FindGameObjectWithTag("World");
-		Debug.Log (isRunning);
 	}
 	
 	/// <summary>
@@ -117,7 +109,6 @@ public class PlayerController : Actor {
 			
 			Bladder += BladderIncreaseRate * Time.deltaTime;
 			Hunger += HungerIncreaseRate * Time.deltaTime;
-			Temperature += TemperatureIncreaseRate * Time.deltaTime;
 			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		}
 		else if (State == ActorState.InChair ||
@@ -132,10 +123,8 @@ public class PlayerController : Actor {
 			}
 		}
 		
-		
 		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon ||
-			Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon ||
-			Mathf.Abs(Temperature - 100.0f) <= Mathf.Epsilon) {
+			Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
 			Relaxation = 0.0f;
 			if (State == ActorState.InChair) {
 				ChangeState(ActorState.Upright);
@@ -157,12 +146,10 @@ public class PlayerController : Actor {
 		string relaxationText = string.Format("Relaxation: {0:00}%", Relaxation);
 		string bladderText = string.Format("Bladder: {0:00}%", Bladder);
 		string hungerText = string.Format ("Hunger: {0:00}%", Hunger);
-		string temperatureText = string.Format ("Temperature: {0:00}%", Temperature);
 	   	
 		GUI.Label(new Rect(20, 20, 200, 30), relaxationText);
 		GUI.Label(new Rect(20, 35, 200, 30), bladderText);
 		GUI.Label(new Rect(20, 50, 200, 30), hungerText);
-		GUI.Label(new Rect(20, 65, 200, 30), temperatureText);
 		
 		if (victoryText.activeSelf) {
 			GUI.Label(new Rect(600, 25, 200, 30), string.Format("Score: {0}", score.CalculateTotalScore()));		

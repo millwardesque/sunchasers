@@ -242,6 +242,10 @@ public class MovementGrid : MonoBehaviour {
 		List<AStarGridSquare> closedList = new List<AStarGridSquare>();
 		AStarGridSquare foundEnd = null;
 		
+		if (start.Equals(end)) {
+			return new List<GridCoordinates>();
+		}
+		
 		openList.Add(MakeAStarSquare(start.Row, start.Column, end, null));
 		while (openList.Count > 0) {
 			// Pop the best square.
