@@ -143,14 +143,6 @@ public class PlayerController : Actor {
 	/// OnGUI hook.
 	/// </summary>
 	void OnGUI () {	 
-		string relaxationText = string.Format("Relaxation: {0:00}%", Relaxation);
-		string bladderText = string.Format("Bladder: {0:00}%", Bladder);
-		string hungerText = string.Format ("Hunger: {0:00}%", Hunger);
-	   	
-		GUI.Label(new Rect(20, 20, 200, 30), relaxationText);
-		GUI.Label(new Rect(20, 35, 200, 30), bladderText);
-		GUI.Label(new Rect(20, 50, 200, 30), hungerText);
-		
 		if (victoryText.activeSelf) {
 			GUI.Label(new Rect(600, 25, 200, 30), string.Format("Score: {0}", score.CalculateTotalScore()));		
 		}
