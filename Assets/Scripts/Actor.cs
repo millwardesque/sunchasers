@@ -5,6 +5,7 @@ using System.Collections;
 /// States an actor can be in.
 /// </summary>
 public enum ActorState {
+	Walking,
 	Upright,
 	InChair,
 	InRestroom,
@@ -18,17 +19,24 @@ public class Actor : MonoBehaviour {
 	public ActorState State = ActorState.Upright;
 	public int StartRow = 0;
 	public int StartColumn = 0;
+	public float WalkSpeed = 50.0f;
 	protected bool isRunning = false;
 	
 	// The grid on which the player moves.
 	protected GameObject movementGrid = null;
 	protected MovementGrid movementGridScript = null;
+	protected Vector3 movementDirection = new Vector3();
+	protected Vector3 movementTarget = new Vector3();
+	protected GridSquare lastSquare = null;
 	protected GridSquare currentSquare = null;
 	public GridSquare CurrentSquare {
 		get { return currentSquare; }
 		set { 
+			lastSquare = currentSquare;
 			currentSquare = value;
-			CalculateNewPosition();
+			movementTarget = CalculatewNewPosition();
+			movementDirection = movementTarget - CalculateSquarePosition(lastSquare);
+			movementDirection.Normalize();
 		}
 	}
 	
@@ -49,6 +57,7 @@ public class Actor : MonoBehaviour {
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid");
 		movementGridScript = movementGrid.GetComponent<MovementGrid>();
 		CurrentSquare = movementGridScript.SquarePositions[StartRow][StartColumn];
+		transform.position = CalculateSquarePosition(CurrentSquare);
 		
 		OnStart();
 	}
@@ -69,7 +78,7 @@ public class Actor : MonoBehaviour {
 	/// <param name='newState'>
 	/// New state.
 	/// </param>
-	public virtual void ChangeState(ActorState newState) {		
+	public virtual void ChangeState(ActorState newState) {
 		if (State == ActorState.Upright && newState == ActorState.InChair) {
 			CurrentSquare.Occupier = this;
 			transform.Translate(new Vector3(0.0f, 1.0f));
@@ -89,15 +98,26 @@ public class Actor : MonoBehaviour {
 	
 		State = newState;
 	}
+
+	/// <summary>
+	/// Calculates the pixel position of a square
+	/// </summary>
+	/// <param name="square">The GridSquare.</param>
+	protected Vector3 CalculateSquarePosition(GridSquare square) {
+		if (square == null) {
+			return new Vector3();
+		}
+
+		float newX = movementGrid.transform.position.x + (float)square.X;
+		float newY = movementGrid.transform.position.y + (float)square.Y;
+		return new Vector3(newX, newY, transform.position.z);
+	}
 	
 	/// <summary>
 	/// Calculates the new position based on the grid-square the player current occupies.
 	/// </summary>
-	void CalculateNewPosition() {
-		float newX = movementGrid.transform.position.x + (float)currentSquare.X;
-		float newY = movementGrid.transform.position.y + (float)currentSquare.Y;
-		Vector3 newPosition = new Vector3(newX, newY, transform.position.z);
-		transform.position = newPosition;
+	protected Vector3 CalculatewNewPosition() {
+		return CalculateSquarePosition(currentSquare);
 	}
 	
 	/// <summary>

@@ -14,7 +14,6 @@ public class PlayerStatsUI : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		meters.text = string.Format("Relaxation: {0:00}%\nBladder: {1:00}%\nHunger: {2:00}%", player.Relaxation, player.Bladder, player.Hunger);
-		Debug.Log(meters.text);
 		meters.Commit();
 	}
 }

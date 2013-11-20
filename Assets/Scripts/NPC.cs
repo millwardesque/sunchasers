@@ -4,10 +4,8 @@ using System.Collections.Generic;
 
 public class NPC : Actor {
 	public GridCoordinates TargetSquare = new GridCoordinates(-1, -1);
-	public float MoveThreshold = 1.0f;
 	private List<GridCoordinates> pathToTarget = new List<GridCoordinates>();
 	private GridCoordinates lastTarget = null;
-	float timeUntilMove = 0.0f;
 	
 	/// <summary>
 	/// Start hook.
@@ -22,49 +20,54 @@ public class NPC : Actor {
 		if (!isRunning) {
 			return;
 		}
-		timeUntilMove -= Time.deltaTime;
-		if (timeUntilMove <= float.Epsilon) {
-			timeUntilMove = MoveThreshold;
-			if (State == ActorState.Upright) {
-				if (TargetSquare.Equals(CurrentSquare.GridCoords)) {
-					if (CurrentSquare.Component is Chair && 	// Kick the player out of the chair.
-						(CurrentSquare.Occupier && CurrentSquare.Occupier.CompareTag("Player"))) {
-						CurrentSquare.Occupier.ChangeState(ActorState.Upright);
-						ChangeState(ActorState.InChair);
-						
-					}
-					else if (CurrentSquare.Component is Chair && !CurrentSquare.IsOccupied()) { // Take the unoccupied chair.
-						ChangeState(ActorState.InChair);
-					}
-					else if (CurrentSquare.Component is Restroom && !CurrentSquare.IsOccupied()) { // Use the restroom.
-						ChangeState(ActorState.InRestroom);
-					}
-					else if (CurrentSquare.Component is SnackBar && !CurrentSquare.IsOccupied()) { // Use the snackbar.
-						ChangeState(ActorState.InSnackBar);
-					}
-					else { // Otherwise, move.
-						FindNewSquare();
-					}
+		if (State == ActorState.Walking) {
+			Vector3 distance = movementDirection * WalkSpeed * Time.deltaTime;
+			
+			if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
+				distance = movementTarget - transform.position;
+				ChangeState (ActorState.Upright);
+			}
+			transform.Translate(distance);
+		}
+		else if (State == ActorState.Upright) {
+			if (TargetSquare.Equals(CurrentSquare.GridCoords)) {
+				if (CurrentSquare.Component is Chair && 	// Kick the player out of the chair.
+					(CurrentSquare.Occupier && CurrentSquare.Occupier.CompareTag("Player"))) {
+					CurrentSquare.Occupier.ChangeState(ActorState.Upright);
+					ChangeState(ActorState.InChair);
+					
+				}
+				else if (CurrentSquare.Component is Chair && !CurrentSquare.IsOccupied()) { // Take the unoccupied chair.
+					ChangeState(ActorState.InChair);
+				}
+				else if (CurrentSquare.Component is Restroom && !CurrentSquare.IsOccupied()) { // Use the restroom.
+					ChangeState(ActorState.InRestroom);
+				}
+				else if (CurrentSquare.Component is SnackBar && !CurrentSquare.IsOccupied()) { // Use the snackbar.
+					ChangeState(ActorState.InSnackBar);
 				}
 				else { // Otherwise, move.
 					FindNewSquare();
 				}
 			}
-			else if (State == ActorState.InChair) {
-				float probabilityOfGettingUp = 0.08f;
-				float value = Random.Range (0.0f, 1.0f);
-				if (value < probabilityOfGettingUp) {
-					ChangeState (ActorState.Upright);
-					FindNewTarget();
-				}
+			else { // Otherwise, move.
+				FindNewSquare();
 			}
-			else if (State == ActorState.InRestroom || State == ActorState.InSnackBar) {
-				float probabilityOfLeaving = 0.16f;
-				float value = Random.Range (0.0f, 1.0f);
-				if (value < probabilityOfLeaving) {
-					ChangeState (ActorState.Upright);
-					FindNewTarget();
-				}
+		}
+		else if (State == ActorState.InChair) {
+			float probabilityOfGettingUp = 0.01f;
+			float value = Random.Range (0.0f, 1.0f);
+			if (value < probabilityOfGettingUp) {
+				ChangeState (ActorState.Upright);
+				FindNewTarget();
+			}
+		}
+		else if (State == ActorState.InRestroom || State == ActorState.InSnackBar) {
+			float probabilityOfLeaving = 0.02f;
+			float value = Random.Range (0.0f, 1.0f);
+			if (value < probabilityOfLeaving) {
+				ChangeState (ActorState.Upright);
+				FindNewTarget();
 			}
 		}
 	}
@@ -77,11 +80,13 @@ public class NPC : Actor {
 			FindNewTarget();
 			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, TargetSquare);	
 		}
-		else if (pathToTarget.Count > 0) {
+
+		if (pathToTarget.Count > 0) {
 			GridCoordinates nextSquare = pathToTarget[0];
 			pathToTarget.RemoveAt(0);
 			
 			CurrentSquare = movementGridScript.SquarePositions[nextSquare.Row][nextSquare.Column];
+			ChangeState(ActorState.Walking);
 		}
 	}
 	

@@ -58,32 +58,17 @@ public class PlayerController : Actor {
 		if (!isRunning) {
 			return;
 		}
-		
-		if (State == ActorState.Upright) {
-			if (Input.GetKeyUp(KeyCode.RightArrow)) {
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
-				}
+
+		if (State == ActorState.Walking) {
+			Vector3 distance = movementDirection * WalkSpeed * Time.deltaTime;
+
+			if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
+				distance = movementTarget - transform.position;
+				ChangeState (ActorState.Upright);
 			}
-			
-			if (Input.GetKeyUp(KeyCode.LeftArrow)) {
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
-				}
-			}
-			
-			if (Input.GetKeyUp(KeyCode.UpArrow)) {
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
-				}
-			}
-			
-			if (Input.GetKeyUp(KeyCode.DownArrow)) {
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
-				}
-			}
-			
+			transform.Translate(distance);
+		}
+		else if (State == ActorState.Upright) {
 			// See if the player landed on any items.
 			if (CurrentSquare.Consumable) {
 				CurrentSquare.Consumable.OnUse();
@@ -91,9 +76,32 @@ public class PlayerController : Actor {
 				CurrentSquare.Consumable = null;
 				score.Add (new ScoreItem(50, "Item"));
 			}
-			
-			// See if the player is trying to enter a building.
-			if (Input.GetKeyUp(KeyCode.Space)) {
+
+			if (Input.GetKeyUp(KeyCode.RightArrow)) {
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
+					ChangeState(ActorState.Walking);
+				}
+			}
+			else if (Input.GetKeyUp(KeyCode.LeftArrow)) {
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
+					ChangeState(ActorState.Walking);
+				}
+			}
+			else if (Input.GetKeyUp(KeyCode.UpArrow)) {
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
+					ChangeState(ActorState.Walking);
+				}
+			}
+			else if (Input.GetKeyUp(KeyCode.DownArrow)) {
+				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
+					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
+					ChangeState(ActorState.Walking);
+				}
+			}
+			else if (Input.GetKeyUp(KeyCode.Space)) {	// See if the player is trying to enter a building.
 				if (currentSquare.Component) {
 					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
 						ChangeState(ActorState.InRestroom);

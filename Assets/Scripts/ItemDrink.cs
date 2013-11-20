@@ -18,8 +18,14 @@ public class ItemDrink : GridConsumable {
 	/// Called when the consumable is used.
 	/// </summary>
 	public override void OnUse() {
-		player.Relaxation += RelaxationChange;
-		player.Bladder += BladderChange;
-		player.Hunger += HungerChange;
+		if (!player) {
+			player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+		}
+
+		if (player) {
+			player.Relaxation += RelaxationChange;
+			player.Bladder += BladderChange;
+			player.Hunger += HungerChange;
+		}
 	}
 }
