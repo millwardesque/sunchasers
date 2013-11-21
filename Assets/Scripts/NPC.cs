@@ -55,7 +55,7 @@ public class NPC : Actor {
 			}
 		}
 		else if (State == ActorState.InChair) {
-			float probabilityOfGettingUp = 0.01f;
+			float probabilityOfGettingUp = 0.005f;
 			float value = Random.Range (0.0f, 1.0f);
 			if (value < probabilityOfGettingUp) {
 				ChangeState (ActorState.Upright);

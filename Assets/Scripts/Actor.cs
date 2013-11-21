@@ -81,11 +81,11 @@ public class Actor : MonoBehaviour {
 	public virtual void ChangeState(ActorState newState) {
 		if (State == ActorState.Upright && newState == ActorState.InChair) {
 			CurrentSquare.Occupier = this;
-			transform.Translate(new Vector3(0.0f, 1.0f));
+			transform.Translate(new Vector3(0.0f, 1.0f, 0.5f));
 		}
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
 			CurrentSquare.Occupier = null;
-			transform.Translate(new Vector3(0.0f, -1.0f));
+			transform.Translate(new Vector3(0.0f, -1.0f, -0.5f));
 		}
 		else if ((State == ActorState.InRestroom || State == ActorState.InSnackBar) && newState == ActorState.Upright) {
 			CurrentSquare.Occupier = null;
