@@ -69,6 +69,11 @@ public class PlayerController : Actor {
 			transform.Translate(distance);
 		}
 		else if (State == ActorState.Upright) {
+			// Update the player's meters.
+			Bladder += BladderIncreaseRate * Time.deltaTime;
+			Hunger += HungerIncreaseRate * Time.deltaTime;
+			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
+
 			// See if the player landed on any items.
 			if (CurrentSquare.Consumable) {
 				CurrentSquare.Consumable.OnUse();
@@ -114,10 +119,6 @@ public class PlayerController : Actor {
 					}
 				}
 			}
-			
-			Bladder += BladderIncreaseRate * Time.deltaTime;
-			Hunger += HungerIncreaseRate * Time.deltaTime;
-			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 		}
 		else if (State == ActorState.InChair ||
 				 State == ActorState.InRestroom ||
