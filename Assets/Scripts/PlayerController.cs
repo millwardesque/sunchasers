@@ -31,6 +31,8 @@ public class PlayerController : Actor {
 	public float RelaxationDecreaseRate = 2.0f;
 	public float BladderIncreaseRate = 1.5f;
 	public float HungerIncreaseRate = 0.5f;
+
+	private tk2dSprite actorSprite;
 	
 	/// <summary>
 	/// Awake hook.
@@ -49,6 +51,7 @@ public class PlayerController : Actor {
 		defeatText.SetActive(false);
 		
 		world = GameObject.FindGameObjectWithTag("World");
+		actorSprite = GetComponent<tk2dSprite>();
 	}
 	
 	/// <summary>
@@ -98,12 +101,16 @@ public class PlayerController : Actor {
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
+
+					actorSprite.SetSprite("player/back-0");
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.DownArrow)) {
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
+
+					actorSprite.SetSprite("player/front-0");
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.Space)) {	// See if the player is trying to enter a building.
