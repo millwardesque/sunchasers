@@ -6,7 +6,8 @@ public class ItemManager : MonoBehaviour {
 	public GameObject[] ItemTypes;	// Types of items to generate.
 	public int MaxItems = 0;			// Max items that can be onscreen at once. Zero for infinite.
 	public float RegenerationRate = 30;	// Item regeneration rate (in seconds).
-	
+
+	private GameState gameState;
 	private MovementGrid movementGrid;
 	private float timeToRegenerate = 0;
 	
@@ -14,6 +15,7 @@ public class ItemManager : MonoBehaviour {
 	/// Start hook.
 	/// </summary>
 	void Start () {
+		gameState = GameObject.FindGameObjectWithTag("World").GetComponent<GameState>();
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid").GetComponent<MovementGrid>();
 	}
 	
@@ -21,18 +23,17 @@ public class ItemManager : MonoBehaviour {
 	/// Update hook.
 	/// </summary>
 	void Update () {
-		if (ItemTypes.Length == 0) {
+		if (ItemTypes.Length == 0 || gameState.State != GameStateEnum.Running) {
 			return;
 		}
-		timeToRegenerate -= Time.deltaTime;
+
+		if (MaxItems == 0 || CountActiveItems() < MaxItems) {
+			timeToRegenerate -= Time.deltaTime;
+		}
 		
 		// Timer is up, build a new item if allowed.
 		if (timeToRegenerate <= 0.0f) {
 			timeToRegenerate = RegenerationRate;
-			
-			if (MaxItems > 0 && CountActiveItems() >= MaxItems) {
-				return;
-			}
 			
 			// Pick a new row / column for the item to be created at.
 			List<GridSquare> potentialSquares = new List<GridSquare>();
