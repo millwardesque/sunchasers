@@ -14,8 +14,8 @@ public class GameTimer : MonoBehaviour {
 	private float time = 0.0f;			// Elapsed time since the timer started.
 	public float Elapsed() {
 		return time;
-	}	
-	
+	}
+
 	/// <summary>
 	/// Awake hook.
 	/// </summary>
@@ -50,19 +50,6 @@ public class GameTimer : MonoBehaviour {
 			
 			hasElapsed = true;
 		}	
-	}
-	
-	/// <summary>
-	/// GUI hook.
-	/// </summary>
-	void OnGUI ()
-	{
-		float timeRemaining = duration - time;
-	    int minutes = (int)(timeRemaining / 60);
-	    int seconds = (int)(timeRemaining) % 60;
-	 
-		string text = string.Format("{0:00}:{1:00}", minutes, seconds); 
-		GUI.Label(new Rect(20, 5, 100, 30), text);
 	}
 	
 	/// <summary>

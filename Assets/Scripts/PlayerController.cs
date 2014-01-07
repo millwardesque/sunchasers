@@ -4,6 +4,7 @@ using System.Collections;
 public class PlayerController : Actor {
 	private GameObject victoryText;
 	private GameObject defeatText;
+	private GameObject towel;
 	
 	private Score score = new Score();
 	private GameObject world;
@@ -49,7 +50,8 @@ public class PlayerController : Actor {
 		victoryText.SetActive(false);
 		defeatText = GameObject.Find("Defeat Text");
 		defeatText.SetActive(false);
-		
+
+		towel = GameObject.Find("Towel");
 		world = GameObject.FindGameObjectWithTag("World");
 		actorSprite = GetComponent<tk2dSprite>();
 	}
@@ -86,31 +88,35 @@ public class PlayerController : Actor {
 			}
 
 			if (Input.GetKeyUp(KeyCode.RightArrow)) {
+				actorSprite.SetSprite("player/right-0");
+
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
 					ChangeState(ActorState.Walking);
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.LeftArrow)) {
+				actorSprite.SetSprite("player/left-0");
+
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
 					ChangeState(ActorState.Walking);
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.UpArrow)) {
+				actorSprite.SetSprite("player/back-0");
+
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
-
-					actorSprite.SetSprite("player/back-0");
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.DownArrow)) {
+				actorSprite.SetSprite("player/front-0");
+
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
-
-					actorSprite.SetSprite("player/front-0");
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.Space)) {	// See if the player is trying to enter a building.
@@ -119,7 +125,7 @@ public class PlayerController : Actor {
 						ChangeState(ActorState.InRestroom);
 					}
 					else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
-						ChangeState (ActorState.InChair);	
+						ChangeState (ActorState.InChair);
 					}
 					else if (currentSquare.Component is SnackBar) {
 						ChangeState (ActorState.InSnackBar);	
@@ -171,6 +177,12 @@ public class PlayerController : Actor {
 	/// New state.
 	/// </param>
 	public override void ChangeState(ActorState newState) {
+		if (newState == ActorState.InChair) {
+			towel.GetComponent<MeshRenderer>().enabled = true;
+		}
+		else if (State == ActorState.InChair && newState == ActorState.Upright) {
+			towel.GetComponent<MeshRenderer>().enabled = false;
+		}
 		base.ChangeState(newState);
 	}
 		
