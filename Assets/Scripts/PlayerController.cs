@@ -47,11 +47,17 @@ public class PlayerController : Actor {
 	/// </summary>
 	protected override void OnStart () {		
 		victoryText = GameObject.Find("Victory Text");
+		victoryText.GetComponent<MeshRenderer>().enabled = true;
 		victoryText.SetActive(false);
+
 		defeatText = GameObject.Find("Defeat Text");
+		defeatText.GetComponent<MeshRenderer>().enabled = true;
 		defeatText.SetActive(false);
 
 		towel = GameObject.Find("Towel");
+		towel.GetComponent<MeshRenderer>().enabled = true;
+		towel.SetActive (false);
+
 		world = GameObject.FindGameObjectWithTag("World");
 		actorSprite = GetComponent<tk2dSprite>();
 	}
@@ -178,10 +184,10 @@ public class PlayerController : Actor {
 	/// </param>
 	public override void ChangeState(ActorState newState) {
 		if (newState == ActorState.InChair) {
-			towel.GetComponent<MeshRenderer>().enabled = true;
+			towel.SetActive(true);
 		}
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
-			towel.GetComponent<MeshRenderer>().enabled = false;
+			towel.SetActive(false);
 		}
 		base.ChangeState(newState);
 	}
