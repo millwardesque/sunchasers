@@ -34,6 +34,7 @@ public class GameStateChangeMessage : Message {
 /// </summary>
 public class GameState : MonoBehaviour {
 	private GameStateEnum state = GameStateEnum.WaitingToStart;
+	public GameObject PausedText;
 	public GameStateEnum State {
 		get { return state; }
 		set {
@@ -42,6 +43,8 @@ public class GameState : MonoBehaviour {
 			MessageManager.Instance.SendToListeners(new GameStateChangeMessage(gameObject, "GameStateChange", oldState, state));
 		}
 	}
+
+
 	
 	/// <summary>
 	/// Start hook.
@@ -53,10 +56,12 @@ public class GameState : MonoBehaviour {
 	public void Update() {
 		if (Input.GetKeyUp(KeyCode.P)) {
 			if (State == GameStateEnum.Running) {
-				State = GameStateEnum.Paused;	
+				State = GameStateEnum.Paused;
+				PausedText.SetActive(true);
 			}
 			else if (State == GameStateEnum.Paused) {
-				State = GameStateEnum.Running;	
+				State = GameStateEnum.Running;
+				PausedText.SetActive(false);
 			}
 		}
 	}
