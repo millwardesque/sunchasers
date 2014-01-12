@@ -65,7 +65,7 @@ public class ItemManager : MonoBehaviour {
 	}
 	
 	/// <summary>
-	/// Counts the number of active in the game.
+	/// Counts the number of active items in the game.
 	/// </summary>
 	/// <returns>
 	/// The number of active items in the game
