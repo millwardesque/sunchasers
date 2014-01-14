@@ -6,7 +6,7 @@ public class PlayerController : Actor {
 	private GameObject defeatText;
 	private GameObject towel;
 	
-	private Score score = new Score();
+	private Score score;
 	private GameObject world;
 	
 	// Player traits.
@@ -60,6 +60,8 @@ public class PlayerController : Actor {
 
 		world = GameObject.FindGameObjectWithTag("World");
 		actorSprite = GetComponent<tk2dSprite>();
+
+		score = GameObject.Find("Score Keeper").GetComponent<ScoreKeeper>().Score;
 	}
 	
 	/// <summary>
@@ -164,15 +166,6 @@ public class PlayerController : Actor {
 			victoryText.SetActive(true);
 			State = ActorState.Upright;
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
-		}
-	}
-	
-	/// <summary>
-	/// OnGUI hook.
-	/// </summary>
-	void OnGUI () {	 
-		if (victoryText.activeSelf) {
-			GUI.Label(new Rect(600, 25, 200, 30), string.Format("Score: {0}", score.CalculateTotalScore()));		
 		}
 	}
 	
