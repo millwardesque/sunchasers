@@ -7,9 +7,10 @@ public class PlayerController : Actor {
 	private GameObject victoryText;
 	private GameObject defeatText;
 	private GameObject towel;
-	
-	private Score score;
+
 	private GameObject world;
+
+	public ScoreKeeper Score;
 	
 	// Player traits.
 	private float relaxation = 0;
@@ -63,8 +64,6 @@ public class PlayerController : Actor {
 		
 		world = GameObject.FindGameObjectWithTag("World");
 		actorSprite = GetComponent<tk2dSprite>();
-		
-		score = GameObject.Find("Score Keeper").GetComponent<ScoreKeeper>().Score;
 	}
 	
 	/// <summary>
@@ -95,7 +94,7 @@ public class PlayerController : Actor {
 				CurrentSquare.Consumable.OnUse();
 				GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 				CurrentSquare.Consumable = null;
-				score.Add (new ScoreItem(50, "Item"));
+				Score.Add (new ScoreItem(50, "Item"));
 			}
 			
 			if (Input.GetKeyUp(KeyCode.RightArrow)) {
@@ -165,7 +164,7 @@ public class PlayerController : Actor {
 		}
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
-			score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
+			Score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
 			State = ActorState.Upright;
 			
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;

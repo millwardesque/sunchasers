@@ -15,7 +15,7 @@ public class ScoreKeeper : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Add (ScoreItem item) {
+	public void Add (ScoreItem item) {
 		if (item != null) {
 			score.Add(item);
 			MessageManager.Instance.SendToListeners(new ScoreChangeMessage(gameObject, "ScoreChange", score, item));
