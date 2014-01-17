@@ -3,30 +3,22 @@ using System.Collections;
 
 public class ScoreKeeper : MonoBehaviour {
 	private Score score;
-	private tk2dTextMesh textmesh;
-
+	
 	public Score Score {
 		get { return score; }
 	}
-
-	string ScoreText {
-		get {
-			return string.Format("Score: {0}", Score.CalculateTotalScore());
-		}
-	}
-
+	
 	// Use this for initialization
 	void Start () {
 		score = new Score();
-		textmesh = GetComponent<tk2dTextMesh>();
+		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
 	}
 	
 	// Update is called once per frame
-	void Update () {
-		string newText = ScoreText;
-		if (textmesh.text != newText) {
-			textmesh.text = newText;
-			textmesh.Commit();
+	void Add (ScoreItem item) {
+		if (item != null) {
+			score.Add(item);
+			MessageManager.Instance.SendToListeners(new ScoreChangeMessage(gameObject, "ScoreChange", score, item));
 		}
 	}
 }

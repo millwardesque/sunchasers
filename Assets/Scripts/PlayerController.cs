@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using System.Collections;
 
 public class PlayerController : Actor {
 	private GameObject victoryText;
@@ -32,7 +34,7 @@ public class PlayerController : Actor {
 	public float RelaxationDecreaseRate = 2.0f;
 	public float BladderIncreaseRate = 1.5f;
 	public float HungerIncreaseRate = 0.5f;
-
+	
 	private tk2dSprite actorSprite;
 	
 	/// <summary>
@@ -40,6 +42,7 @@ public class PlayerController : Actor {
 	/// </summary>
 	protected override void OnAwake() {
 		MessageManager.Instance.RegisterListener(new Listener("GameTimerElapsed", gameObject, "OnGameTimerElapsed"));
+		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
 	}
 	
 	/// <summary>
@@ -49,18 +52,18 @@ public class PlayerController : Actor {
 		victoryText = GameObject.Find("Victory Text");
 		victoryText.GetComponent<MeshRenderer>().enabled = true;
 		victoryText.SetActive(false);
-
+		
 		defeatText = GameObject.Find("Defeat Text");
 		defeatText.GetComponent<MeshRenderer>().enabled = true;
 		defeatText.SetActive(false);
-
+		
 		towel = GameObject.Find("Towel");
 		towel.GetComponent<MeshRenderer>().enabled = true;
 		towel.SetActive (false);
-
+		
 		world = GameObject.FindGameObjectWithTag("World");
 		actorSprite = GetComponent<tk2dSprite>();
-
+		
 		score = GameObject.Find("Score Keeper").GetComponent<ScoreKeeper>().Score;
 	}
 	
@@ -71,10 +74,10 @@ public class PlayerController : Actor {
 		if (!isRunning) {
 			return;
 		}
-
+		
 		if (State == ActorState.Walking) {
 			Vector3 distance = movementDirection * WalkSpeed * Time.deltaTime;
-
+			
 			if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
 				distance = movementTarget - transform.position;
 				ChangeState (ActorState.Upright);
@@ -86,7 +89,7 @@ public class PlayerController : Actor {
 			Bladder += BladderIncreaseRate * Time.deltaTime;
 			Hunger += HungerIncreaseRate * Time.deltaTime;
 			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
-
+			
 			// See if the player landed on any items.
 			if (CurrentSquare.Consumable) {
 				CurrentSquare.Consumable.OnUse();
@@ -94,10 +97,10 @@ public class PlayerController : Actor {
 				CurrentSquare.Consumable = null;
 				score.Add (new ScoreItem(50, "Item"));
 			}
-
+			
 			if (Input.GetKeyUp(KeyCode.RightArrow)) {
 				actorSprite.SetSprite("player/right-0");
-
+				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
 					ChangeState(ActorState.Walking);
@@ -105,7 +108,7 @@ public class PlayerController : Actor {
 			}
 			else if (Input.GetKeyUp(KeyCode.LeftArrow)) {
 				actorSprite.SetSprite("player/left-0");
-
+				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
 					ChangeState(ActorState.Walking);
@@ -113,7 +116,7 @@ public class PlayerController : Actor {
 			}
 			else if (Input.GetKeyUp(KeyCode.UpArrow)) {
 				actorSprite.SetSprite("player/back-0");
-
+				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
@@ -121,7 +124,7 @@ public class PlayerController : Actor {
 			}
 			else if (Input.GetKeyUp(KeyCode.DownArrow)) {
 				actorSprite.SetSprite("player/front-0");
-
+				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
@@ -142,8 +145,8 @@ public class PlayerController : Actor {
 			}
 		}
 		else if (State == ActorState.InChair ||
-				 State == ActorState.InRestroom ||
-				 State == ActorState.InSnackBar) {
+		         State == ActorState.InRestroom ||
+		         State == ActorState.InSnackBar) {
 			
 			if (Input.GetKeyUp(KeyCode.Space)) {
 				ChangeState(ActorState.Upright);
@@ -154,7 +157,7 @@ public class PlayerController : Actor {
 		}
 		
 		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon ||
-			Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
+		    Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
 			Relaxation = 0.0f;
 			if (State == ActorState.InChair) {
 				ChangeState(ActorState.Upright);
@@ -163,8 +166,8 @@ public class PlayerController : Actor {
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
-			victoryText.SetActive(true);
 			State = ActorState.Upright;
+			
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 		}
 	}
@@ -184,7 +187,7 @@ public class PlayerController : Actor {
 		}
 		base.ChangeState(newState);
 	}
-		
+	
 	/// <summary>
 	/// Called when the game timer elapsed event.
 	/// </summary>
@@ -195,6 +198,13 @@ public class PlayerController : Actor {
 		if (Object.ReferenceEquals(message.MessageSource, GameObject.FindGameObjectWithTag("World"))) {
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 			defeatText.SetActive(true);
+		}
+	}
+	
+	public void OnGameStateChange(Message message) {
+		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
+		if (realMessage.newState == GameStateEnum.PlayerWon) {
+			victoryText.SetActive(true);
 		}
 	}
 }

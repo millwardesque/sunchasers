@@ -44,7 +44,7 @@ public class Actor : MonoBehaviour {
 	/// Awake hook.
 	/// </summary>
 	void Awake() {
-		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));	
+		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "ActorOnGameStateChange"));	
 		
 		OnAwake();
 	}
@@ -126,7 +126,7 @@ public class Actor : MonoBehaviour {
 	/// <param name='message'>
 	/// Message.
 	/// </param>
-	public void OnGameStateChange(Message message) {
+	public void ActorOnGameStateChange(Message message) {
 		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
 		
 		switch (realMessage.newState) {
