@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class NPC : Actor {
+public class NPCAggressive : Actor {
 	public GridCoordinates TargetSquare = new GridCoordinates(-1, -1);
 	private List<GridCoordinates> pathToTarget = new List<GridCoordinates>();
 	private GridCoordinates lastTarget = null;

@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEngine;
-using System.Collections;
 
 public class PlayerController : Actor {
 	private GameObject victoryText;
