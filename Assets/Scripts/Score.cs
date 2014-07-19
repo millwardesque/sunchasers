@@ -58,9 +58,38 @@ public class Score
 	
 	public string GetScoreBreakdown() {
 		string breakdown = "";
+		Dictionary<string, List<ScoreItem> > scoreTypes = new Dictionary<string, List<ScoreItem> >();
+
+		// Group the different score items by type.
 		foreach (ScoreItem score in scoreItems) {
-			breakdown += score.ToString() + "\n";
+			if (!scoreTypes.ContainsKey(score.Label)) {
+				scoreTypes.Add (score.Label, new List<ScoreItem>());
+			}
+			scoreTypes[score.Label].Add (score);
 		}
+
+		// @TODO Sort scores alphabetically by type.
+
+		// List the different types.
+		foreach (string key in scoreTypes.Keys) {
+			int subscore = 0;
+			foreach (ScoreItem item in scoreTypes[key]) {
+				subscore += item.Score();
+			}
+
+			if (scoreTypes[key].Count > 1) {
+				breakdown += string.Format("{0} x{1}: {2}\n", key, scoreTypes[key].Count, subscore);
+			}
+			else {
+				breakdown += string.Format("{0}: {1}\n", key, subscore);
+			}
+		}
+
+		// Add the total score.
+		int totalScore = CalculateTotalScore();
+		breakdown += string.Format("##########\n");
+		breakdown += string.Format("Total Score: {0}", totalScore);
+
 		return breakdown;
 	}
 	
