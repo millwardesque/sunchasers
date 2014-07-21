@@ -6,11 +6,18 @@ public class NPCBasic : Actor {
 	public GridCoordinates TargetSquare = new GridCoordinates(-1, -1);
 	private List<GridCoordinates> pathToTarget = new List<GridCoordinates>();
 	private GridCoordinates lastTarget = null;
+	private tk2dSprite actorSprite;
+	private GameObject towel;
 	
 	/// <summary>
 	/// Start hook.
 	/// </summary>
 	override protected void OnStart() {
+		actorSprite = GetComponent<tk2dSprite>();
+
+		towel = GameObject.Find("NPC-Basic-Towel");
+		towel.GetComponent<MeshRenderer>().enabled = true;
+		towel.SetActive (false);
 	}
 	
 	/// <summary>
@@ -65,6 +72,22 @@ public class NPCBasic : Actor {
 			}
 		}
 	}
+
+	/// <summary>
+	/// Changes the actor's state.
+	/// </summary>
+	/// <param name='newState'>
+	/// New state.
+	/// </param>
+	public override void ChangeState(ActorState newState) {
+		if (newState == ActorState.InChair) {
+			towel.SetActive(true);
+		}
+		else if (State == ActorState.InChair && newState == ActorState.Upright) {
+			towel.SetActive(false);
+		}
+		base.ChangeState(newState);
+	}
 	
 	/// <summary>
 	/// Finds the next square the NPC should move to.
@@ -78,6 +101,19 @@ public class NPCBasic : Actor {
 		if (pathToTarget.Count > 0) {
 			GridCoordinates nextSquare = pathToTarget[0];
 			pathToTarget.RemoveAt(0);
+
+			if (nextSquare.Column > CurrentSquare.Column) {
+				actorSprite.SetSprite("NPC-Basic/right-0");
+			}
+			else if (nextSquare.Column < CurrentSquare.Column) {
+				actorSprite.SetSprite("NPC-Basic/left-0");
+			}
+			else if (nextSquare.Row > CurrentSquare.Row) {
+				actorSprite.SetSprite("NPC-Basic/back-0");
+			}
+			else if (nextSquare.Row < CurrentSquare.Row) {
+				actorSprite.SetSprite("NPC-Basic/front-0");
+			}
 			
 			CurrentSquare = movementGridScript.SquarePositions[nextSquare.Row][nextSquare.Column];
 			ChangeState(ActorState.Walking);
