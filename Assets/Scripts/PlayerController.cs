@@ -193,8 +193,7 @@ public class PlayerController : Actor {
 	/// </param>
 	public void OnGameTimerElapsed(Message message) {
 		if (Object.ReferenceEquals(message.MessageSource, GameObject.FindGameObjectWithTag("World"))) {
-			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
-			defeatText.SetActive(true);
+			world.GetComponent<GameState>().State = GameStateEnum.PlayerLost;
 		}
 	}
 	
@@ -202,6 +201,9 @@ public class PlayerController : Actor {
 		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
 		if (realMessage.newState == GameStateEnum.PlayerWon) {
 			victoryText.SetActive(true);
+		}
+		else if (realMessage.newState == GameStateEnum.PlayerLost) {
+			defeatText.SetActive(true);
 		}
 	}
 }

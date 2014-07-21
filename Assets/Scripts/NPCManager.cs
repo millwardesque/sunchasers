@@ -8,6 +8,22 @@ public class NPCManager : MonoBehaviour {
 
 	private MovementGrid movementGrid;
 
+	/// <summary>
+	/// Resets the state of the game.
+	/// </summary>
+	public void Reset() {
+		// Remove existing NPCs.
+		GameObject[] npcs = GameObject.FindGameObjectsWithTag("NPC");
+		for (int i = 0; i < npcs.Length; ++i) {
+			GameObject.Destroy(npcs[i]);
+		}
+		
+		// Re-seed the NPCs in starting locations
+		for (int i = 0; i < MaxNPCs; ++i) {
+			GenerateNPC();
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid").GetComponent<MovementGrid>();
@@ -17,6 +33,9 @@ public class NPCManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Creates an NPC.
+	/// </summary>
 	void GenerateNPC() {
 		// Pick a new row / column for the item to be created at.
 		List<GridSquare> potentialSquares = new List<GridSquare>();

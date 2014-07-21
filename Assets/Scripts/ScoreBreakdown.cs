@@ -12,7 +12,7 @@ public class ScoreBreakdown : MonoBehaviour {
 
 		scoreMesh = GetComponent<tk2dTextMesh>();
 	}
-	
+
 	public void OnScoreChange(Message message) {
 		ScoreChangeMessage realMessage = (ScoreChangeMessage)message;
 		scoreMesh.text = string.Format("Score\n{0}", realMessage.score.GetScoreBreakdown());
