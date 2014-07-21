@@ -73,4 +73,15 @@ public class ItemManager : MonoBehaviour {
 	int CountActiveItems() {
 		return GameObject.FindGameObjectsWithTag("Item").Length;	
 	}
+
+	/// <summary>
+	/// Resets the item manager to start fresh.
+	/// </summary>
+	public void Reset() {
+		// Removes any active items in the system.
+		GameObject[] items = GameObject.FindGameObjectsWithTag("Item");
+		for (int i = 0; i < items.Length; ++i) {
+			GameObject.Destroy(items[i]);
+		}
+	}
 }

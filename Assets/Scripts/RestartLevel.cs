@@ -23,16 +23,16 @@ public class RestartLevel : MonoBehaviour {
 
 	public void Restart() {
 		Debug.Log("Restarting level.");
-		// @TODO Reset timer
 		// @TODO Reset sun position
-		// @TODO Reset ambient light
 		// @TODO Reset player position
-		// @TODO Reset items
+		// @TODO Reset NPCs
 		// @TODO Reset score
 		// @TODO Reset score breakdown items
 
+		gameState.State = GameStateEnum.WaitingToStart;
+		itemManager.Reset();
+
 		gameState.State = GameStateEnum.Running;
-		npcManager.Reset(); // @TODO NPCs don't move when reset!
 
 		Debug.Log("Level restarted.");
 	}

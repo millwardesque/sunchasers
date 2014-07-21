@@ -13,15 +13,23 @@ public class NPCManager : MonoBehaviour {
 	/// </summary>
 	public void Reset() {
 		// Remove existing NPCs.
-		GameObject[] npcs = GameObject.FindGameObjectsWithTag("NPC");
+		/*GameObject[] npcs = GameObject.FindGameObjectsWithTag("NPC");
 		for (int i = 0; i < npcs.Length; ++i) {
 			GameObject.Destroy(npcs[i]);
+		}
+
+		// Clear the grid so the system doesn't think deleted NPCs are occupying them.
+		for (int row = 0; row < movementGrid.NumRows; row++) {
+			for (int column = 0; column < movementGrid.NumColumns; column++) {
+				GridSquare gridSquare = movementGrid.SquarePositions[row][column];
+				gridSquare.Occupier = null;
+			}
 		}
 		
 		// Re-seed the NPCs in starting locations
 		for (int i = 0; i < MaxNPCs; ++i) {
 			GenerateNPC();
-		}
+		} */
 	}
 
 	// Use this for initialization

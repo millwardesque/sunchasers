@@ -101,7 +101,7 @@ public sealed class MessageManager {
 	{
 		int listenerCount = 0;
 		foreach (var recipient in listeners.FindAll(listener => listener.ListenFor == message.MessageName))  
-		{    
+		{
 		    recipient.Recipient.BroadcastMessage(recipient.RecipientMethod, message, SendMessageOptions.DontRequireReceiver);
 			listenerCount++;
 		}
