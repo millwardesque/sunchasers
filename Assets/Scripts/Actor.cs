@@ -56,9 +56,8 @@ public class Actor : MonoBehaviour {
 		// Get the movement script and set the starting square.
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid");
 		movementGridScript = movementGrid.GetComponent<MovementGrid>();
-		CurrentSquare = movementGridScript.SquarePositions[StartRow][StartColumn];
-		transform.position = CalculateSquarePosition(CurrentSquare);
-		
+		SetCurrentSquareAndPosition(StartRow, StartColumn);
+
 		OnStart();
 	}
 
@@ -97,6 +96,16 @@ public class Actor : MonoBehaviour {
 		}
 	
 		State = newState;
+	}
+
+	/// <summary>
+	/// Sets the actor's square and moves the actor to that square's worldspace location.
+	/// </summary>
+	/// <param name="row">Row.</param>
+	/// <param name="column">Column.</param>
+	public void SetCurrentSquareAndPosition(int row, int column) {
+		CurrentSquare = movementGridScript.SquarePositions[row][column];
+		transform.position = CalculateSquarePosition(CurrentSquare);
 	}
 
 	/// <summary>
@@ -139,7 +148,7 @@ public class Actor : MonoBehaviour {
 			isRunning = false;
 			break;
 		case GameStateEnum.WaitingToStart:
-			State = ActorState.Upright;
+			ChangeState(ActorState.Upright);
 			isRunning = false;
 			break;
 		default:

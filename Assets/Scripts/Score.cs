@@ -55,7 +55,14 @@ public class Score
 	public void Add(ScoreItem item) {
 		scoreItems.Add(item);
 	}
-	
+
+	/// <summary>
+	/// Resets the player's score.
+	/// </summary>
+	public void Reset() {
+		scoreItems.Clear();
+	}
+
 	public string GetScoreBreakdown() {
 		string breakdown = "";
 		Dictionary<string, List<ScoreItem> > scoreTypes = new Dictionary<string, List<ScoreItem> >();

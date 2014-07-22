@@ -5,12 +5,20 @@ public class RestartLevel : MonoBehaviour {
 	private GameState gameState;
 	private NPCManager npcManager;
 	private ItemManager itemManager;
+	private ScoreKeeper scoreKeeper;
+	private PlayerController player;
+	private MovementGrid movementGrid;
 
 	// Use this for initialization
 	void Start () {
-		gameState = (GameState)GameObject.FindGameObjectWithTag("World").GetComponent("GameState");	
-		npcManager = (NPCManager)GameObject.FindGameObjectWithTag("Movement Grid").GetComponent("NPCManager");
-		itemManager = (ItemManager)GameObject.FindGameObjectWithTag("Movement Grid").GetComponent("ItemManager");
+		GameObject movementGridObject = GameObject.FindGameObjectWithTag("Movement Grid");
+
+		gameState = (GameState)GameObject.FindGameObjectWithTag("World").GetComponent("GameState");
+		movementGrid = (MovementGrid)movementGridObject.GetComponent("MovementGrid");
+		npcManager = (NPCManager)movementGridObject.GetComponent("NPCManager");
+		itemManager = (ItemManager)movementGridObject.GetComponent("ItemManager");
+		scoreKeeper = (ScoreKeeper)GameObject.FindGameObjectWithTag("ScoreKeeper").GetComponent("ScoreKeeper");
+		player = (PlayerController)GameObject.FindGameObjectWithTag("Player").GetComponent("PlayerController");
 	}
 	
 	// Update is called once per frame
@@ -23,14 +31,20 @@ public class RestartLevel : MonoBehaviour {
 
 	public void Restart() {
 		Debug.Log("Restarting level.");
-		// @TODO Reset sun position
-		// @TODO Reset player position
-		// @TODO Reset NPCs
-		// @TODO Reset score
-		// @TODO Reset score breakdown items
-
+	
 		gameState.State = GameStateEnum.WaitingToStart;
 		itemManager.Reset();
+		scoreKeeper.Reset();
+
+		// @TODO Reset NPCs
+		//npcManager.Reset ();
+
+		// Reset the player attributes.
+		player.SetCurrentSquareAndPosition(player.StartRow, player.StartColumn);
+		player.SetSprite("player/front-0");
+		player.Relaxation = 0.0f;
+		player.Bladder = 0.0f;
+		player.Hunger = 0.0f;
 
 		gameState.State = GameStateEnum.Running;
 

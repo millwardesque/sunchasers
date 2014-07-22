@@ -58,7 +58,7 @@ public class PlayerController : Actor {
 		
 		towel = GameObject.Find("Towel");
 		towel.GetComponent<MeshRenderer>().enabled = true;
-		towel.SetActive (false);
+		ToggleTowel(false);
 		
 		world = GameObject.FindGameObjectWithTag("World");
 		actorSprite = GetComponent<tk2dSprite>();
@@ -96,7 +96,7 @@ public class PlayerController : Actor {
 			}
 			
 			if (Input.GetKeyUp(KeyCode.RightArrow)) {
-				actorSprite.SetSprite("player/right-0");
+				SetSprite("player/right-0");
 				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
@@ -104,7 +104,7 @@ public class PlayerController : Actor {
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.LeftArrow)) {
-				actorSprite.SetSprite("player/left-0");
+				SetSprite("player/left-0");
 				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
@@ -112,7 +112,7 @@ public class PlayerController : Actor {
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.UpArrow)) {
-				actorSprite.SetSprite("player/back-0");
+				SetSprite("player/back-0");
 				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
@@ -120,7 +120,7 @@ public class PlayerController : Actor {
 				}
 			}
 			else if (Input.GetKeyUp(KeyCode.DownArrow)) {
-				actorSprite.SetSprite("player/front-0");
+				SetSprite("player/front-0");
 				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
@@ -168,7 +168,7 @@ public class PlayerController : Actor {
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 		}
 	}
-	
+
 	/// <summary>
 	/// Changes the actor's state.
 	/// </summary>
@@ -177,10 +177,10 @@ public class PlayerController : Actor {
 	/// </param>
 	public override void ChangeState(ActorState newState) {
 		if (newState == ActorState.InChair) {
-			towel.SetActive(true);
+			ToggleTowel(true);
 		}
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
-			towel.SetActive(false);
+			ToggleTowel(false);
 		}
 		base.ChangeState(newState);
 	}
@@ -205,5 +205,13 @@ public class PlayerController : Actor {
 		else if (realMessage.newState == GameStateEnum.PlayerLost) {
 			defeatText.SetActive(true);
 		}
+	}
+
+	public void SetSprite(string spriteName) {
+		actorSprite.SetSprite(spriteName);
+	}
+
+	public void ToggleTowel(bool showTowel) {
+		towel.SetActive(showTowel);
 	}
 }
