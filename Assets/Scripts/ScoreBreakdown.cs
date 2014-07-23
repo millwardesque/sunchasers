@@ -29,5 +29,15 @@ public class ScoreBreakdown : MonoBehaviour {
 				mesh.enabled = true;
 			}
 		}
+		else {
+			if (GetComponent<MeshRenderer>().enabled) {
+				GetComponent<MeshRenderer>().enabled = false;
+				
+				MeshRenderer[] meshes = GetComponentsInChildren<MeshRenderer>();
+				foreach (MeshRenderer mesh in meshes) {
+					mesh.enabled = false;
+				}
+			}
+		}
 	}
 }

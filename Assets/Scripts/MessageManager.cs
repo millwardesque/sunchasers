@@ -77,7 +77,7 @@ public sealed class MessageManager {
 	{
 		get { return instance; }
 	}
-	
+
 	private List<Listener> listeners = new List<Listener>();
 	
 	/// <summary>
@@ -101,7 +101,13 @@ public sealed class MessageManager {
 	{
 		int listenerCount = 0;
 		foreach (var recipient in listeners.FindAll(listener => listener.ListenFor == message.MessageName))  
-		{
+		{	
+			// Detect and remove any listeners whose object have been deleted.
+			if (recipient.Recipient == null) {
+				listeners.Remove (recipient);
+				continue;
+			}
+
 		    recipient.Recipient.BroadcastMessage(recipient.RecipientMethod, message, SendMessageOptions.DontRequireReceiver);
 			listenerCount++;
 		}

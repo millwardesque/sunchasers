@@ -1,12 +1,17 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ScoreBreakdown.cs">
+    <Files>
+      <File FileName="Assets/Scripts/PlayerController.cs" Line="219" Column="41" />
+      <File FileName="Assets/Scripts/RestartLevel.cs" Line="38" Column="22" />
+      <File FileName="Assets/Scripts/ScoreBreakdown.cs" Line="20" Column="3" />
+    </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Scripts" expanded="True">
-              <Node name="GameState.cs" selected="True" />
+              <Node name="ScoreBreakdown.cs" selected="True" />
             </Node>
           </Node>
         </State>

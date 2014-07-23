@@ -33,18 +33,10 @@ public class RestartLevel : MonoBehaviour {
 		Debug.Log("Restarting level.");
 	
 		gameState.State = GameStateEnum.WaitingToStart;
-		itemManager.Reset();
 		scoreKeeper.Reset();
-
-		// @TODO Reset NPCs
-		//npcManager.Reset ();
-
-		// Reset the player attributes.
-		player.SetCurrentSquareAndPosition(player.StartRow, player.StartColumn);
-		player.SetSprite("player/front-0");
-		player.Relaxation = 0.0f;
-		player.Bladder = 0.0f;
-		player.Hunger = 0.0f;
+		itemManager.Reset();
+		npcManager.Reset();
+		player.Reset();
 
 		gameState.State = GameStateEnum.Running;
 

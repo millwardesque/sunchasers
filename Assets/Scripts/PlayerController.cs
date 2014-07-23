@@ -214,4 +214,14 @@ public class PlayerController : Actor {
 	public void ToggleTowel(bool showTowel) {
 		towel.SetActive(showTowel);
 	}
+
+	public void Reset() {
+		SetCurrentSquareAndPosition(StartRow, StartColumn);
+		SetSprite("player/front-0");
+		Relaxation = 0.0f;
+		Bladder = 0.0f;
+		Hunger = 0.0f;
+		victoryText.SetActive(false);
+		defeatText.SetActive(false);
+	}
 }
