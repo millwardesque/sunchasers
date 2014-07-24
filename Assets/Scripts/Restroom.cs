@@ -6,6 +6,7 @@ public class Restroom : GridComponent {
 	public float RelaxationDecreaseRate = 0.1f;
 	public float HungerIncreaseRate = 0.5f;
 	private PlayerController player;
+	private tk2dSpriteAnimator animator;
 	
 	
 	/// <summary>
@@ -13,6 +14,7 @@ public class Restroom : GridComponent {
 	/// </summary>
 	protected override void OnStart() {
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+		animator = (tk2dSpriteAnimator)GetComponent("tk2dSpriteAnimator");
 	}
 	
 	/// <summary>
@@ -24,7 +26,14 @@ public class Restroom : GridComponent {
 		player.Hunger += HungerIncreaseRate * Time.deltaTime;
 		
 		if (player.Bladder <= Mathf.Epsilon) {
+			this.openAndCloseDoor();
 			player.ChangeState(ActorState.Upright);
+		}
+	}
+
+	public void openAndCloseDoor() {
+		if (animator) {
+			animator.Play("Open and close");
 		}
 	}
 }

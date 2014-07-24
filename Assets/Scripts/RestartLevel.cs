@@ -7,14 +7,12 @@ public class RestartLevel : MonoBehaviour {
 	private ItemManager itemManager;
 	private ScoreKeeper scoreKeeper;
 	private PlayerController player;
-	private MovementGrid movementGrid;
 
 	// Use this for initialization
 	void Start () {
 		GameObject movementGridObject = GameObject.FindGameObjectWithTag("Movement Grid");
 
 		gameState = (GameState)GameObject.FindGameObjectWithTag("World").GetComponent("GameState");
-		movementGrid = (MovementGrid)movementGridObject.GetComponent("MovementGrid");
 		npcManager = (NPCManager)movementGridObject.GetComponent("NPCManager");
 		itemManager = (ItemManager)movementGridObject.GetComponent("ItemManager");
 		scoreKeeper = (ScoreKeeper)GameObject.FindGameObjectWithTag("ScoreKeeper").GetComponent("ScoreKeeper");

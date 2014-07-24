@@ -130,6 +130,7 @@ public class PlayerController : Actor {
 			else if (Input.GetKeyUp(KeyCode.Space)) {	// See if the player is trying to enter a building.
 				if (currentSquare.Component) {
 					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
+						((Restroom)(currentSquare.Component)).openAndCloseDoor();
 						ChangeState(ActorState.InRestroom);
 					}
 					else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
@@ -146,6 +147,9 @@ public class PlayerController : Actor {
 		         State == ActorState.InSnackBar) {
 			
 			if (Input.GetKeyUp(KeyCode.Space)) {
+				if (currentSquare.Component is Restroom) {
+					((Restroom)(currentSquare.Component)).openAndCloseDoor();
+				}
 				ChangeState(ActorState.Upright);
 			}
 			else if (currentSquare.Component) {				
