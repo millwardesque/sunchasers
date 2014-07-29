@@ -95,7 +95,7 @@ public class PlayerController : Actor {
 				Score.Add (new ScoreItem(50, "Item"));
 			}
 			
-			if (Input.GetKeyUp(KeyCode.RightArrow)) {
+			if (Input.GetKeyDown(KeyCode.RightArrow)) {
 				SetSprite("player/right-0");
 				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
@@ -103,7 +103,7 @@ public class PlayerController : Actor {
 					ChangeState(ActorState.Walking);
 				}
 			}
-			else if (Input.GetKeyUp(KeyCode.LeftArrow)) {
+			else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
 				SetSprite("player/left-0");
 				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
@@ -111,23 +111,25 @@ public class PlayerController : Actor {
 					ChangeState(ActorState.Walking);
 				}
 			}
-			else if (Input.GetKeyUp(KeyCode.UpArrow)) {
+			else if (Input.GetKeyDown(KeyCode.UpArrow)) {
 				SetSprite("player/back-0");
 				
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
+					walkNorth();
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
 				}
 			}
-			else if (Input.GetKeyUp(KeyCode.DownArrow)) {
+			else if (Input.GetKeyDown(KeyCode.DownArrow)) {
 				SetSprite("player/front-0");
-				
+
 				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
+					walkSouth();
 					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
 					ChangeState(ActorState.Walking);
 				}
 			}
-			else if (Input.GetKeyUp(KeyCode.Space)) {	// See if the player is trying to enter a building.
+			else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
 				if (currentSquare.Component) {
 					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
 						((Restroom)(currentSquare.Component)).openAndCloseDoor();
@@ -146,7 +148,7 @@ public class PlayerController : Actor {
 		         State == ActorState.InRestroom ||
 		         State == ActorState.InSnackBar) {
 			
-			if (Input.GetKeyUp(KeyCode.Space)) {
+			if (Input.GetKeyDown(KeyCode.Space)) {
 				if (currentSquare.Component is Restroom) {
 					((Restroom)(currentSquare.Component)).openAndCloseDoor();
 				}
@@ -185,6 +187,9 @@ public class PlayerController : Actor {
 		}
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
 			ToggleTowel(false);
+		}
+		else if (State == ActorState.Walking) {
+			animator.Stop ();
 		}
 		base.ChangeState(newState);
 	}

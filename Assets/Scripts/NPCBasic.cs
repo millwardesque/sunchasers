@@ -86,6 +86,9 @@ public class NPCBasic : Actor {
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
 			towel.SetActive(false);
 		}
+		else if (newState == ActorState.Upright) {
+			stopAnimations();
+		}
 		base.ChangeState(newState);
 	}
 	
@@ -110,9 +113,11 @@ public class NPCBasic : Actor {
 			}
 			else if (nextSquare.Row > CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Basic/back-0");
+				walkNorth();
 			}
 			else if (nextSquare.Row < CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Basic/front-0");
+				walkSouth ();
 			}
 			
 			CurrentSquare = movementGridScript.SquarePositions[nextSquare.Row][nextSquare.Column];

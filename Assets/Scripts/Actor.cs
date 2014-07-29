@@ -21,8 +21,9 @@ public class Actor : MonoBehaviour {
 	public int StartColumn = 0;
 	public float WalkSpeed = 50.0f;
 	protected bool isRunning = false;
+	protected tk2dSpriteAnimator animator = null;
 	
-	// The grid on which the player moves.
+	// The grid on which the actor moves.
 	protected GameObject movementGrid = null;
 	protected MovementGrid movementGridScript = null;
 	protected Vector3 movementDirection = new Vector3();
@@ -57,6 +58,10 @@ public class Actor : MonoBehaviour {
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid");
 		movementGridScript = movementGrid.GetComponent<MovementGrid>();
 		SetCurrentSquareAndPosition(StartRow, StartColumn);
+
+		if (GetComponent("tk2dSpriteAnimator")) {
+			animator = (tk2dSpriteAnimator)GetComponent("tk2dSpriteAnimator");
+		}
 
 		OnStart();
 	}
@@ -154,5 +159,23 @@ public class Actor : MonoBehaviour {
 		default:
 			break;
 		}
-	} 
+	}
+
+	public void stopAnimations() {
+		if (animator && animator.Playing) {
+			animator.Stop();
+		}
+	}
+
+	public void walkSouth() {
+		if (animator && !animator.IsPlaying("Walk south")) {
+			animator.Play("Walk south");
+		}
+	}
+	
+	public void walkNorth() {
+		if (animator && !animator.IsPlaying("Walk north")) {
+			animator.Play("Walk north");
+		}
+	}
 }

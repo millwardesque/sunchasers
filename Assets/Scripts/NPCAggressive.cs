@@ -92,6 +92,9 @@ public class NPCAggressive : Actor {
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
 			towel.SetActive(false);
 		}
+		else if (newState == ActorState.Upright) {
+			stopAnimations();
+		}
 		base.ChangeState(newState);
 	}
 	
@@ -101,7 +104,7 @@ public class NPCAggressive : Actor {
 	void FindNewSquare() {		
 		if (pathToTarget.Count == 0) {
 			FindNewTarget();
-			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, TargetSquare);	
+			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, TargetSquare);
 		}
 
 		if (pathToTarget.Count > 0) {
@@ -116,9 +119,11 @@ public class NPCAggressive : Actor {
 			}
 			else if (nextSquare.Row > CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Aggressive/back-0");
+				walkNorth ();
 			}
 			else if (nextSquare.Row < CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Aggressive/front-0");
+				walkSouth ();
 			}
 
 			CurrentSquare = movementGridScript.SquarePositions[nextSquare.Row][nextSquare.Column];

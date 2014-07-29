@@ -1,17 +1,12 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/RestartLevel.cs">
-    <Files>
-      <File FileName="Assets/Scripts/PlayerController.cs" Line="133" Column="7" />
-      <File FileName="Assets/Scripts/Restroom.cs" Line="29" Column="8" />
-      <File FileName="Assets/Scripts/RestartLevel.cs" Line="15" Column="94" />
-    </Files>
+  <MonoDevelop.Ide.Workbench>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Scripts" expanded="True">
-              <Node name="RestartLevel.cs" selected="True" />
+              <Node name="PlayerController.cs" selected="True" />
             </Node>
           </Node>
         </State>

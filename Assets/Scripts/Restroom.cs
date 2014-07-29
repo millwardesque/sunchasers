@@ -26,14 +26,22 @@ public class Restroom : GridComponent {
 		player.Hunger += HungerIncreaseRate * Time.deltaTime;
 		
 		if (player.Bladder <= Mathf.Epsilon) {
+			animator.AnimationCompleted = openAndCloseDoorCompleteDelegate;
 			this.openAndCloseDoor();
-			player.ChangeState(ActorState.Upright);
 		}
 	}
 
 	public void openAndCloseDoor() {
-		if (animator) {
+		if (animator && !animator.IsPlaying("Open and close")) {
 			animator.Play("Open and close");
 		}
+	}
+
+	// This is called once the hit animation has compelted playing
+	// It returns to playing whatever animation was active before hit
+	// was playing.
+	void openAndCloseDoorCompleteDelegate(tk2dSpriteAnimator sprite, tk2dSpriteAnimationClip clip) {
+		player.ChangeState (ActorState.Upright);
+		animator.AnimationCompleted = null;
 	}
 }
