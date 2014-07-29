@@ -91,13 +91,21 @@ public class Actor : MonoBehaviour {
 			CurrentSquare.Occupier = null;
 			transform.Translate(new Vector3(0.0f, -1.0f, -0.5f));
 		}
-		else if ((State == ActorState.InRestroom || State == ActorState.InSnackBar) && newState == ActorState.Upright) {
+		else if (State == ActorState.InRestroom && newState == ActorState.Upright) {
 			CurrentSquare.Occupier = null;
 			GetComponent<MeshRenderer>().enabled = true;
 		}
-		else if (newState == ActorState.InRestroom || newState == ActorState.InSnackBar) {
+		else if (newState == ActorState.InRestroom) {
 			CurrentSquare.Occupier = this;
 			GetComponent<MeshRenderer>().enabled = false;
+		}
+		else if (State == ActorState.InSnackBar && newState == ActorState.Upright) {
+			CurrentSquare.Occupier = null;
+			transform.Translate(new Vector3(0.0f, -1.0f, -0.5f));
+		}
+		else if (newState == ActorState.InSnackBar) {
+			CurrentSquare.Occupier = this;
+			transform.Translate(new Vector3(0.0f, 1.0f, 0.5f));
 		}
 	
 		State = newState;

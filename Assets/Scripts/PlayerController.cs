@@ -77,7 +77,23 @@ public class PlayerController : Actor {
 			
 			if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
 				distance = movementTarget - transform.position;
-				ChangeState (ActorState.Upright);
+
+				// Allow player to walk without pausing at each square
+				if (Input.GetKey(KeyCode.RightArrow)) {
+					WalkEast ();
+				}
+				else if (Input.GetKey(KeyCode.LeftArrow)) {
+					WalkWest ();
+				}
+				else if (Input.GetKey(KeyCode.UpArrow)) {
+					WalkNorth ();
+				}
+				else if (Input.GetKey(KeyCode.DownArrow)) {
+					WalkSouth ();
+				}
+				else {
+					ChangeState (ActorState.Upright);
+				}
 			}
 			else {
 				if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
