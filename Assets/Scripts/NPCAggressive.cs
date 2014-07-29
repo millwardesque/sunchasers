@@ -119,11 +119,11 @@ public class NPCAggressive : Actor {
 			}
 			else if (nextSquare.Row > CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Aggressive/back-0");
-				walkNorth ();
+				animWalkNorth ();
 			}
 			else if (nextSquare.Row < CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Aggressive/front-0");
-				walkSouth ();
+				animWalkSouth ();
 			}
 
 			CurrentSquare = movementGridScript.SquarePositions[nextSquare.Row][nextSquare.Column];

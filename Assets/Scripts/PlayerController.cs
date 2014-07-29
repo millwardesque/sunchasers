@@ -79,6 +79,25 @@ public class PlayerController : Actor {
 				distance = movementTarget - transform.position;
 				ChangeState (ActorState.Upright);
 			}
+			else {
+				if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
+					if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0) {
+						WalkEast ();
+					}
+					else if (Input.GetKeyDown(KeyCode.LeftArrow) && distance.x >= 0) {
+						WalkWest ();
+					}
+				}
+				else if (Mathf.Abs(distance.x) <= Mathf.Abs (distance.y)) {
+					if (Input.GetKeyDown(KeyCode.UpArrow) && distance.y < 0) {
+						WalkNorth ();
+					}
+					else if (Input.GetKeyDown(KeyCode.DownArrow) && distance.y >= 0) {
+						WalkSouth ();
+					}
+				}
+			}
+
 			transform.Translate(distance);
 		}
 		else if (State == ActorState.Upright) {
@@ -96,38 +115,16 @@ public class PlayerController : Actor {
 			}
 			
 			if (Input.GetKeyDown(KeyCode.RightArrow)) {
-				SetSprite("player/right-0");
-				
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
-					ChangeState(ActorState.Walking);
-				}
+				WalkEast ();
 			}
 			else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-				SetSprite("player/left-0");
-				
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
-					ChangeState(ActorState.Walking);
-				}
+				WalkWest ();
 			}
 			else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-				SetSprite("player/back-0");
-				
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
-					walkNorth();
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
-					ChangeState(ActorState.Walking);
-				}
+				WalkNorth ();
 			}
 			else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-				SetSprite("player/front-0");
-
-				if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
-					walkSouth();
-					CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
-					ChangeState(ActorState.Walking);
-				}
+				WalkSouth ();
 			}
 			else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
 				if (currentSquare.Component) {
@@ -232,5 +229,43 @@ public class PlayerController : Actor {
 		Hunger = 0.0f;
 		victoryText.SetActive(false);
 		defeatText.SetActive(false);
+	}
+
+	protected void WalkNorth() {
+		SetSprite("player/back-0");
+		
+		if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
+			animWalkNorth();
+			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
+			ChangeState(ActorState.Walking);
+		}
+	}
+
+	protected void WalkSouth() {
+		SetSprite("player/front-0");
+		
+		if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
+			animWalkSouth();
+			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
+			ChangeState(ActorState.Walking);
+		}
+	}
+
+	protected void WalkWest() {
+		SetSprite("player/left-0");
+		
+		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
+			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
+			ChangeState(ActorState.Walking);
+		}
+	}
+
+	protected void WalkEast() {
+		SetSprite("player/right-0");
+		
+		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
+			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
+			ChangeState(ActorState.Walking);
+		}
 	}
 }

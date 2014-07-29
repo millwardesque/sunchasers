@@ -113,11 +113,11 @@ public class NPCBasic : Actor {
 			}
 			else if (nextSquare.Row > CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Basic/back-0");
-				walkNorth();
+				animWalkNorth();
 			}
 			else if (nextSquare.Row < CurrentSquare.Row) {
 				actorSprite.SetSprite("NPC-Basic/front-0");
-				walkSouth ();
+				animWalkSouth ();
 			}
 			
 			CurrentSquare = movementGridScript.SquarePositions[nextSquare.Row][nextSquare.Column];

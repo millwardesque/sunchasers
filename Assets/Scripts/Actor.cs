@@ -167,13 +167,13 @@ public class Actor : MonoBehaviour {
 		}
 	}
 
-	public void walkSouth() {
+	public void animWalkSouth() {
 		if (animator && !animator.IsPlaying("Walk south")) {
 			animator.Play("Walk south");
 		}
 	}
 	
-	public void walkNorth() {
+	public void animWalkNorth() {
 		if (animator && !animator.IsPlaying("Walk north")) {
 			animator.Play("Walk north");
 		}
