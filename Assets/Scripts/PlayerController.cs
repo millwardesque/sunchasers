@@ -78,6 +78,14 @@ public class PlayerController : Actor {
 			if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
 				distance = movementTarget - transform.position;
 
+				// See if the player landed on any items.
+				if (CurrentSquare.Consumable) {
+					CurrentSquare.Consumable.OnUse();
+					GameObject.Destroy(CurrentSquare.Consumable.gameObject);
+					CurrentSquare.Consumable = null;
+					Score.Add (new ScoreItem(50, "Item"));
+				}
+
 				// Allow player to walk without pausing at each square
 				if (Input.GetKey(KeyCode.RightArrow)) {
 					WalkEast ();
