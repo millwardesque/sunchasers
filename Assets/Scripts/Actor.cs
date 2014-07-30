@@ -107,6 +107,10 @@ public class Actor : MonoBehaviour {
 			CurrentSquare.Occupier = this;
 			transform.Translate(new Vector3(0.0f, 1.0f, 0.5f));
 		}
+
+		if (newState == ActorState.Upright) {
+			stopAnimations();
+		}
 	
 		State = newState;
 	}

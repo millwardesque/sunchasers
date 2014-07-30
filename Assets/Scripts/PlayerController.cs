@@ -209,9 +209,7 @@ public class PlayerController : Actor {
 		else if (State == ActorState.InChair && newState == ActorState.Upright) {
 			ToggleTowel(false);
 		}
-		else if (State == ActorState.Walking) {
-			animator.Stop ();
-		}
+
 		base.ChangeState(newState);
 	}
 	
@@ -279,6 +277,7 @@ public class PlayerController : Actor {
 		SetSprite("player/left-0");
 		
 		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
+			stopAnimations();
 			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
 			ChangeState(ActorState.Walking);
 		}
@@ -288,6 +287,7 @@ public class PlayerController : Actor {
 		SetSprite("player/right-0");
 		
 		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
+			stopAnimations();
 			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
 			ChangeState(ActorState.Walking);
 		}
