@@ -251,6 +251,7 @@ public class PlayerController : Actor {
 		Hunger = 0.0f;
 		victoryText.SetActive(false);
 		defeatText.SetActive(false);
+		ToggleTowel(false);
 	}
 
 	protected void WalkNorth() {
