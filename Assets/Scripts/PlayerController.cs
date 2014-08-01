@@ -256,20 +256,24 @@ public class PlayerController : Actor {
 
 	protected void WalkNorth() {
 		SetSprite("player/back-0");
+		int row = CurrentSquare.Row + 1;
+		int column = CurrentSquare.Column;
 		
-		if (movementGridScript.IsTraversableSquare(currentSquare.Row + 1, currentSquare.Column)) {
+		if (movementGridScript.IsTraversableSquare(row, column) && !movementGridScript.SquareHasChair(CurrentSquare.Row, CurrentSquare.Column)) {
 			animWalkNorth();
-			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column];
+			CurrentSquare = movementGridScript.SquarePositions[row][column];
 			ChangeState(ActorState.Walking);
 		}
 	}
 
 	protected void WalkSouth() {
 		SetSprite("player/front-0");
+		int row = CurrentSquare.Row - 1;
+		int column = CurrentSquare.Column;
 		
-		if (movementGridScript.IsTraversableSquare(currentSquare.Row - 1, currentSquare.Column)) {
+		if (movementGridScript.IsTraversableSquare(row, column) && !movementGridScript.SquareHasChair(row, column)) {
 			animWalkSouth();
-			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column];
+			CurrentSquare = movementGridScript.SquarePositions[row][column];
 			ChangeState(ActorState.Walking);
 		}
 	}

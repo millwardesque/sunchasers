@@ -101,7 +101,11 @@ public class NPCAggressive : Actor {
 	/// <summary>
 	/// Finds the next square the NPC should move to.
 	/// </summary>
-	void FindNewSquare() {		
+	void FindNewSquare() {	
+		if (null == pathToTarget) {
+			Debug.Log (string.Format ("Unable find path from {0} to {1}: {2}", CurrentSquare.GridCoords, TargetSquare, movementGridScript.SquarePositions[TargetSquare.Row][TargetSquare.Column]));
+		}
+
 		if (pathToTarget.Count == 0) {
 			FindNewTarget();
 			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, TargetSquare);
@@ -159,6 +163,9 @@ public class NPCAggressive : Actor {
 		
 		if (bestTarget != null) {
 			TargetSquare = bestTarget.GridCoords;
+		}
+		else {
+			Debug.Log (string.Format("Unable to find new target from {0}, {1}", CurrentSquare.Column, CurrentSquare.Row));
 		}
 	}
 }

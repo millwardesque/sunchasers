@@ -95,7 +95,10 @@ public class NPCBasic : Actor {
 	/// <summary>
 	/// Finds the next square the NPC should move to.
 	/// </summary>
-	void FindNewSquare() {		
+	void FindNewSquare() {
+		if (null == pathToTarget) {
+			Debug.Log (string.Format ("Unable find path from {0} to {1}: {2}", CurrentSquare.GridCoords, TargetSquare, movementGridScript.SquarePositions[TargetSquare.Row][TargetSquare.Column]));
+		}
 		if (pathToTarget.Count == 0) {
 			FindNewTarget();
 			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, TargetSquare);	

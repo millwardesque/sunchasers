@@ -224,6 +224,15 @@ public class MovementGrid : MonoBehaviour {
 			return false;
 		}
 	}
+
+	public bool SquareHasChair(int row, int column) {
+		if (column < NumColumns && column >= 0 && row < NumRows && row >= 0 && SquarePositions[row][column].Component != null) {
+			return (SquarePositions[row][column].Component.tag == "Chair");
+		}
+		else {
+			return false;
+		}
+	}
 	
 	/// <summary>
 	/// Finds the path to a grid square.
