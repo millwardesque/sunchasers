@@ -74,6 +74,11 @@ public class PlayerController : Actor {
 		
 		if (State == ActorState.Walking) {
 			Vector3 distance = movementDirection * WalkSpeed * Time.deltaTime;
+
+			// Update the player's meters.
+			Bladder += BladderIncreaseRate * Time.deltaTime;
+			Hunger += HungerIncreaseRate * Time.deltaTime;
+			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
 			
 			if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
 				distance = movementTarget - transform.position;
@@ -190,7 +195,6 @@ public class PlayerController : Actor {
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			Score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
-			State = ActorState.Upright;
 			
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 		}
