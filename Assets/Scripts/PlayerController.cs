@@ -249,7 +249,7 @@ public class PlayerController : Actor {
 
 	public void Reset() {
 		SetCurrentSquareAndPosition(StartRow, StartColumn);
-		SetSprite("player/front-0");
+		SetSprite("player/south-1");
 		Relaxation = 0.0f;
 		Bladder = 0.0f;
 		Hunger = 0.0f;
@@ -259,7 +259,7 @@ public class PlayerController : Actor {
 	}
 
 	protected void WalkNorth() {
-		SetSprite("player/back-0");
+		SetSprite("player/north-1");
 		int row = CurrentSquare.Row + 1;
 		int column = CurrentSquare.Column;
 		
@@ -271,7 +271,7 @@ public class PlayerController : Actor {
 	}
 
 	protected void WalkSouth() {
-		SetSprite("player/front-0");
+		SetSprite("player/south-1");
 		int row = CurrentSquare.Row - 1;
 		int column = CurrentSquare.Column;
 		
@@ -283,7 +283,7 @@ public class PlayerController : Actor {
 	}
 
 	protected void WalkWest() {
-		SetSprite("player/left-0");
+		SetSprite("player/west-1");
 		
 		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
 			stopAnimations();
@@ -293,7 +293,7 @@ public class PlayerController : Actor {
 	}
 
 	protected void WalkEast() {
-		SetSprite("player/right-0");
+		SetSprite("player/east-1");
 		
 		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
 			stopAnimations();
