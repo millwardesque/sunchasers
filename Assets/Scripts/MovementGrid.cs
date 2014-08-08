@@ -141,6 +141,10 @@ public class GridSquare{
 	public override string ToString() {
 		return string.Format ("{0} X: {1} Y: {2} T: {3}", GridCoords, X, Y, IsTraversable);
 	}
+
+	public Vector2 PixelCoords {
+		get { return new Vector2(X, Y); }
+	}
 }
 
 public class MovementGrid : MonoBehaviour {
@@ -179,7 +183,7 @@ public class MovementGrid : MonoBehaviour {
 	}
 	
 	/// <summary>
-	/// Sets theGridComponent for a grid square.
+	/// Sets the GridComponent for a grid square.
 	/// </summary>
 	/// <param name='coords'>
 	/// Coords.
@@ -190,7 +194,7 @@ public class MovementGrid : MonoBehaviour {
 	public void SetComponent(GridCoordinates coords, GridComponent component) {
 		SquarePositions[coords.Row][coords.Column].Component = component;
 	}
-	
+
 	/// <summary>
 	/// Assigns a consumable to a square.
 	/// </summary>
@@ -225,6 +229,32 @@ public class MovementGrid : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Gets the grid square from the world-space position.
+	/// </summary>
+	/// <returns>The grid square at the given position.</returns>
+	/// <param name="position">World-space Position.</param>
+	public GridSquare GetSquareFromPosition(Vector3 position) {
+		float closestDistance = 9999999;
+		GridSquare closestSquare = null;
+
+		// Convert the position to localspace.
+		position -= transform.position;
+
+		// Find the closest square.
+		for (int row = 0; row < NumRows; row++) {
+			for (int column = 0; column < NumColumns; column++) {
+				float distance = (new Vector2(position.x, position.y) - SquarePositions[row][column].PixelCoords).magnitude;
+				if (distance < closestDistance) {
+					closestDistance = distance;
+					closestSquare = SquarePositions[row][column];
+				}
+			}
+		}
+
+		return closestSquare;
+	}
+
 	public bool SquareHasChair(int row, int column) {
 		if (column < NumColumns && column >= 0 && row < NumRows && row >= 0 && SquarePositions[row][column].Component != null) {
 			return (SquarePositions[row][column].Component.tag == "Chair");
@@ -250,7 +280,7 @@ public class MovementGrid : MonoBehaviour {
 		List<AStarGridSquare> openList = new List<AStarGridSquare>();
 		List<AStarGridSquare> closedList = new List<AStarGridSquare>();
 		AStarGridSquare foundEnd = null;
-		
+
 		if (start.Equals(end)) {
 			return new List<GridCoordinates>();
 		}
@@ -290,6 +320,7 @@ public class MovementGrid : MonoBehaviour {
 				foundEnd = foundEnd.Parent;
 			} while (foundEnd.Parent != null);
 			path.Reverse();
+
 			return path;
 		}
 		else {				
@@ -367,5 +398,21 @@ public class MovementGrid : MonoBehaviour {
 		}
 		
 		return best;
+	}
+
+	/// <summary>
+	/// Debug member function for dumping the path found by the A* algorithm.
+	/// </summary>
+	/// <param name="start">Start.</param>
+	/// <param name="end">End.</param>
+	/// <param name="path">Path.</param>
+	private void DumpPath(GridCoordinates start, GridCoordinates end, List<GridCoordinates> path) {
+		Debug.Log (string.Format ("Start: {0}", start));
+		int index = 1;
+		foreach (GridCoordinates step in path) {
+			Debug.Log (string.Format ("{0}: {1}", index, step));
+			index++;
+		}
+		Debug.Log (string.Format ("End: {0}", end));
 	}
 }

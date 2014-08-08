@@ -1,12 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerController : Actor {
 	private GameObject victoryText;
 	private GameObject defeatText;
 	private GameObject towel;
 
+	private GridCoordinates targetSquare = new GridCoordinates(-1, -1);	// Target square used when the user clicks a grid square.
+	private List<GridCoordinates> pathToTarget = new List<GridCoordinates>();	// A list of squares that lead to the target square.
+
 	private GameObject world;
+	private Camera gameCamera;
 
 	public ScoreKeeper Score;
 	
@@ -62,6 +67,8 @@ public class PlayerController : Actor {
 		
 		world = GameObject.FindGameObjectWithTag("World");
 		actorSprite = GetComponent<tk2dSprite>();
+
+		gameCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
 	}
 	
 	/// <summary>
@@ -92,17 +99,24 @@ public class PlayerController : Actor {
 				}
 
 				// Allow player to walk without pausing at each square
-				if (Input.GetKey(KeyCode.RightArrow)) {
+				if (pathToTarget != null && pathToTarget.Count > 0) {
+					FindNextSquare();
+				}
+				else if (Input.GetKey(KeyCode.RightArrow)) {
 					WalkEast ();
+					CancelAutoPathfind();
 				}
 				else if (Input.GetKey(KeyCode.LeftArrow)) {
 					WalkWest ();
+					CancelAutoPathfind();
 				}
 				else if (Input.GetKey(KeyCode.UpArrow)) {
 					WalkNorth ();
+					CancelAutoPathfind();
 				}
 				else if (Input.GetKey(KeyCode.DownArrow)) {
 					WalkSouth ();
+					CancelAutoPathfind();
 				}
 				else {
 					ChangeState (ActorState.Upright);
@@ -134,7 +148,7 @@ public class PlayerController : Actor {
 			Bladder += BladderIncreaseRate * Time.deltaTime;
 			Hunger += HungerIncreaseRate * Time.deltaTime;
 			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
-			
+
 			// See if the player landed on any items.
 			if (CurrentSquare.Consumable) {
 				CurrentSquare.Consumable.OnUse();
@@ -142,8 +156,16 @@ public class PlayerController : Actor {
 				CurrentSquare.Consumable = null;
 				Score.Add (new ScoreItem(50, "Item"));
 			}
-			
-			if (Input.GetKeyDown(KeyCode.RightArrow)) {
+
+			if (Input.GetMouseButtonUp(0)) {
+				Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
+				targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition).GridCoords;
+				Debug.Log(string.Format("Nearest grid square is {0}", targetSquare));
+
+				pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare);
+				FindNextSquare();
+			}
+			else if (Input.GetKeyDown(KeyCode.RightArrow)) {
 				WalkEast ();
 			}
 			else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
@@ -298,6 +320,40 @@ public class PlayerController : Actor {
 		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
 			stopAnimations();
 			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
+			ChangeState(ActorState.Walking);
+		}
+	}
+
+	void CancelAutoPathfind() {
+		pathToTarget = null;
+	}
+
+	/// <summary>
+	/// Finds the next square the actor should move to.
+	/// </summary>
+	void FindNextSquare() {
+		if (null == pathToTarget) {
+			Debug.Log (string.Format ("Unable find path from {0} to {1}: {2}", CurrentSquare.GridCoords, targetSquare, movementGridScript.SquarePositions[targetSquare.Row][targetSquare.Column]));
+		}
+
+		if (pathToTarget.Count > 0) {
+			GridCoordinates nextSquare = pathToTarget[0];
+			pathToTarget.RemoveAt(0);
+
+			Debug.Log (string.Format("Next step is from {0} to {1}", CurrentSquare.GridCoords, nextSquare));
+			if (nextSquare.Column > CurrentSquare.Column) {
+				WalkEast();
+			}
+			else if (nextSquare.Column < CurrentSquare.Column) {
+				WalkWest();
+			}
+			else if (nextSquare.Row > CurrentSquare.Row) {
+				WalkNorth();
+			}
+			else if (nextSquare.Row < CurrentSquare.Row) {
+				WalkSouth();
+			}
+
 			ChangeState(ActorState.Walking);
 		}
 	}
