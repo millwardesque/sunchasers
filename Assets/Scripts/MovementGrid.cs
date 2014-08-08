@@ -333,16 +333,16 @@ public class MovementGrid : MonoBehaviour {
 	/// </param>
 	private List<AStarGridSquare> GetAdjacentTraversableSquares(int row, int column, GridCoordinates target, AStarGridSquare parent) {
 		List<AStarGridSquare> adjacentSquares = new List<AStarGridSquare>();
-		if (row - 1 >= 0 && IsTraversableSquare(row - 1, column)) {
+		if (row - 1 >= 0 && IsTraversableSquare(row - 1, column) && !SquareHasChair(row - 1, column)) {			// Southern square.
 			adjacentSquares.Add(MakeAStarSquare(row - 1, column, target, parent));
 		}
-		if (row + 1 < NumRows && IsTraversableSquare(row + 1, column)) {
+		if (row + 1 < NumRows && IsTraversableSquare(row + 1, column) && !SquareHasChair(row, column)) {	// Northern square.
 			adjacentSquares.Add(MakeAStarSquare(row + 1, column, target, parent));
 		}
-		if (column - 1 >= 0 && IsTraversableSquare(row, column - 1)) {
+		if (column - 1 >= 0 && IsTraversableSquare(row, column - 1)) {		// Western square.
 			adjacentSquares.Add(MakeAStarSquare(row, column - 1, target, parent));
 		}
-		if (column + 1 < NumColumns && IsTraversableSquare(row, column + 1)) {
+		if (column + 1 < NumColumns && IsTraversableSquare(row, column + 1)) {	// Eastern square.
 			adjacentSquares.Add(MakeAStarSquare(row, column + 1, target, parent));
 		}
 		
