@@ -168,4 +168,15 @@ public class NPCAggressive : Actor {
 			Debug.Log (string.Format("Unable to find new target from {0}, {1}", CurrentSquare.Column, CurrentSquare.Row));
 		}
 	}
+
+	public void TargetPlayerSquare() {
+		PlayerController player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+		if (player) {
+			ChangeState(ActorState.Upright);
+			TargetSquare = player.CurrentSquare.GridCoords;
+			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, TargetSquare);
+
+			Debug.Log (string.Format ("Targeting {0}", player.CurrentSquare.GridCoords));
+		}
+	}
 }

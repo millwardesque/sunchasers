@@ -6,6 +6,7 @@ public class NPCManager : MonoBehaviour {
 	public GameObject[] NPCTypes;	// Types of NPCs to generate.
 	public int MaxNPCs = 0;			// Max items that can be onscreen at once. Zero for infinite.
 
+	private float chanceToUnseatPlayer = 0.1f;
 	private MovementGrid movementGrid;
 
 	/// <summary>
@@ -38,6 +39,24 @@ public class NPCManager : MonoBehaviour {
 
 		for (int i = 0; i < MaxNPCs; ++i) {
 			GenerateNPC();
+		}
+	}
+
+	void Update() {
+		chanceToUnseatPlayer += Time.deltaTime * 0.001f;
+
+		if (Input.GetKeyUp("t")) {
+			GameObject[] npcs = GameObject.FindGameObjectsWithTag("NPC");
+			List<NPCAggressive> aggroNPCs = new List<NPCAggressive>();
+
+			foreach (GameObject npc in npcs) {
+				if (npc.GetComponent<NPCAggressive>()) {
+					aggroNPCs.Add(npc.GetComponent<NPCAggressive>());
+				}
+			}
+			chanceToUnseatPlayer = 0.0f;
+			int npcIndex = Random.Range (0, aggroNPCs.Count - 1);
+			aggroNPCs[npcIndex].TargetPlayerSquare();
 		}
 	}
 
