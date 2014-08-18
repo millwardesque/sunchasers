@@ -42,7 +42,8 @@ public class NPCAggressive : Actor {
 					(CurrentSquare.Occupier && CurrentSquare.Occupier.CompareTag("Player"))) {
 					CurrentSquare.Occupier.ChangeState(ActorState.Upright);
 					ChangeState(ActorState.InChair);
-					
+
+					GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraShake>().TriggerShake();
 				}
 				else if (CurrentSquare.Component is Chair && !CurrentSquare.IsOccupied()) { // Take the unoccupied chair.
 					ChangeState(ActorState.InChair);

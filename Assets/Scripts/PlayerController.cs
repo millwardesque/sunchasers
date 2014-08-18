@@ -13,6 +13,9 @@ public class PlayerController : Actor {
 	private GameObject world;
 	private Camera gameCamera;
 
+	private bool bladderIsFull = false;	// Used to track if the player's bladder gauge is full.
+	private bool hungerIsFull = false; // Used to track if the player's hunger gauge is full.
+
 	public ScoreKeeper Score;
 	
 	// Player traits.
@@ -207,13 +210,36 @@ public class PlayerController : Actor {
 			}
 		}
 		
-		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon ||
-		    Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
+		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon) {
 			Relaxation = 0.0f;
 			if (State == ActorState.InChair) {
 				ChangeState(ActorState.Upright);
 			}
+
+			if (!bladderIsFull) {	// Ensure the camera only shakes when the player reaches full-bladder and not every frame after.
+				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraShake>().TriggerShake();
+			}
+			bladderIsFull = true;
 		}
+		else {
+			bladderIsFull = false;
+		}
+
+		if (Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
+			Relaxation = 0.0f;
+			if (State == ActorState.InChair) {
+				ChangeState(ActorState.Upright);
+			}
+
+			if (!hungerIsFull) {	// Ensure the camera only shakes when the player reaches full-hunger and not every frame after.
+				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraShake>().TriggerShake();
+			}
+			hungerIsFull = true;
+		}
+		else {
+			hungerIsFull = false;
+		}
+
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			Score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
