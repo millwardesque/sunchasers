@@ -72,6 +72,8 @@ public class PlayerController : Actor {
 		actorSprite = GetComponent<tk2dSprite>();
 
 		gameCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
+
+		Idle ();
 	}
 	
 	/// <summary>
@@ -256,9 +258,17 @@ public class PlayerController : Actor {
 	/// </param>
 	public override void ChangeState(ActorState newState) {
 		if (newState == ActorState.InChair) {
+			animSleepSouth();
 			ToggleTowel(true);
 		}
-		else if (State == ActorState.InChair && newState == ActorState.Upright) {
+		else if (newState == ActorState.Upright) {
+			Idle();
+		}
+		else if (newState == ActorState.InSnackBar) {
+			animAtSnackbar();
+		}
+
+		if (State == ActorState.InChair && newState == ActorState.Upright) {
 			ToggleTowel(false);
 		}
 
@@ -297,7 +307,7 @@ public class PlayerController : Actor {
 
 	public void Reset() {
 		SetCurrentSquareAndPosition(StartRow, StartColumn);
-		SetSprite("player/south-1");
+		SetSprite("walk-south-0");
 		Relaxation = 0.0f;
 		Bladder = 0.0f;
 		Hunger = 0.0f;
@@ -307,7 +317,7 @@ public class PlayerController : Actor {
 	}
 
 	protected void WalkNorth() {
-		SetSprite("player/north-1");
+		SetSprite("walk-north-0");
 		int row = CurrentSquare.Row + 1;
 		int column = CurrentSquare.Column;
 		
@@ -319,7 +329,7 @@ public class PlayerController : Actor {
 	}
 
 	protected void WalkSouth() {
-		SetSprite("player/south-1");
+		SetSprite("walk-south-0");
 		int row = CurrentSquare.Row - 1;
 		int column = CurrentSquare.Column;
 		
@@ -331,23 +341,28 @@ public class PlayerController : Actor {
 	}
 
 	protected void WalkWest() {
-		SetSprite("player/west-1");
+		SetSprite("walk-west-0");
 		
 		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
-			stopAnimations();
+			animWalkWest ();
 			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
 			ChangeState(ActorState.Walking);
 		}
 	}
 
 	protected void WalkEast() {
-		SetSprite("player/east-1");
+		SetSprite("walk-east-0");
 		
 		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
-			stopAnimations();
+			animWalkEast();
 			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
 			ChangeState(ActorState.Walking);
 		}
+	}
+
+	protected void Idle() {
+		SetSprite("idle-0");
+		animIdle();
 	}
 
 	void CancelAutoPathfind() {

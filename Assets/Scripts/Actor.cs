@@ -190,4 +190,34 @@ public class Actor : MonoBehaviour {
 			animator.Play("Walk north");
 		}
 	}
+
+	public void animWalkEast() {
+		if (animator && !animator.IsPlaying("Walk east")) {
+			animator.Play("Walk east");
+		}
+	}
+
+	public void animWalkWest() {
+		if (animator && !animator.IsPlaying("Walk west")) {
+			animator.Play("Walk west");
+		}
+	}
+
+	public void animSleepSouth() {
+		if (animator && !animator.IsPlaying("Sleep south")) {
+			animator.Play("Sleep south");
+		}
+	}
+
+	public void animAtSnackbar() {
+		if (animator && !animator.IsPlaying("At snackbar")) {
+			animator.Play("At snackbar");
+		}
+	}
+
+	public void animIdle() {
+		if (animator && !animator.IsPlaying("Idle")) {
+			animator.Play("Idle");
+		}
+	}
 }
