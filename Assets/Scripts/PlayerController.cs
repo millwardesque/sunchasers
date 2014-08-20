@@ -265,11 +265,15 @@ public class PlayerController : Actor {
 			Idle();
 		}
 		else if (newState == ActorState.InSnackBar) {
+			transform.Translate(new Vector3(0, 0, 0.5f));
 			animAtSnackbar();
 		}
 
 		if (State == ActorState.InChair && newState == ActorState.Upright) {
 			ToggleTowel(false);
+		}
+		else if (State == ActorState.InSnackBar && newState != ActorState.InSnackBar) {
+			transform.Translate(new Vector3(0, 0, -0.5f));
 		}
 
 		base.ChangeState(newState);
