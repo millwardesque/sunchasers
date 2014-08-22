@@ -16,12 +16,14 @@ Luckily, you'll also have some help:
 * Some chairs are especially luxurious and increase your relaxation at a faster rate than the regular chairs.
 
 # Controls
+* Left click: Move your character to the clicked square. Player must be upright or walking, and player will not sit automatically upon arrival at the square.
 * Up: Move your character up.
 * Down: Move your character down.
 * Left: Move your character left.
 * Right: Move your character right.
 * Space: Relax on a chair OR use the washroom (entrance on the left side only) OR use the snackbar.
 * R: Restart the level.
+* P: Pause / unpause the game.
 
 # Notes
 * Maximize your browser window if you can't see the full game screen, the web resolution is 1366x768.
