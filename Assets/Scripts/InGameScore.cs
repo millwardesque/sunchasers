@@ -3,7 +3,7 @@ using System.Collections;
 
 public class InGameScore : MonoBehaviour {
 	private tk2dTextMesh scoreMesh;
-	
+
 	// Use this for initialization
 	void Start () {
 		MessageManager.Instance.RegisterListener(new Listener("ScoreChange", gameObject, "OnScoreChange"));

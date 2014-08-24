@@ -5,8 +5,9 @@ public class ItemDrink : GridConsumable {
 	public float BladderChange= 10.0f;
 	public float RelaxationChange = 15.0f;
 	public float HungerChange = -5.0f;
+
 	private PlayerController player;
-	
+
 	/// <summary>
 	/// GridConsumable's OnStart hook.
 	/// </summary>
@@ -18,14 +19,8 @@ public class ItemDrink : GridConsumable {
 	/// Called when the consumable is used.
 	/// </summary>
 	public override void OnUse() {
-		if (!player) {
-			player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-		}
-
-		if (player) {
-			player.Relaxation += RelaxationChange;
-			player.Bladder += BladderChange;
-			player.Hunger += HungerChange;
-		}
+		player.Relaxation += RelaxationChange;
+		player.Bladder += BladderChange;
+		player.Hunger += HungerChange;
 	}
 }

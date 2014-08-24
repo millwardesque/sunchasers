@@ -8,5 +8,6 @@
 *.sln
 *.DS_Store
 
-
+Assets/PointClickPlacementTool*
+Assets/Universal Sound FX*
 *.userprefs

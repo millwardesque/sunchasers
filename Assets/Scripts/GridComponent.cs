@@ -23,4 +23,14 @@ public class GridComponent : MonoBehaviour {
 	/// Called when the component is active during the Unity Update hook.
 	/// </summary>
 	public virtual void OnUpdate() { }
+
+	/// <summary>
+	/// Called when an actor activates the grid component.
+	/// </summary>
+	public virtual void OnActivate(Actor Actor) { }
+
+	/// <summary>
+	/// Called when an actor de-activates the grid component.
+	/// </summary>
+	public virtual void OnDeactivate(Actor actor) { }
 }

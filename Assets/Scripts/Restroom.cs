@@ -5,9 +5,12 @@ public class Restroom : GridComponent {
 	public float BladderDecreaseRate = 5.0f;
 	public float RelaxationDecreaseRate = 0.1f;
 	public float HungerIncreaseRate = 0.5f;
+	public AudioClip OpenDoorAudio;
+	public AudioClip ToiletFlushAudio;
+
 	private PlayerController player;
 	private tk2dSpriteAnimator animator;
-	
+	private AudioSource audioSource;
 	
 	/// <summary>
 	/// GridComponent's OnStart hook.
@@ -15,6 +18,7 @@ public class Restroom : GridComponent {
 	protected override void OnStart() {
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 		animator = (tk2dSpriteAnimator)GetComponent("tk2dSpriteAnimator");
+		audioSource = GetComponent<AudioSource>();
 	}
 	
 	/// <summary>
@@ -28,6 +32,8 @@ public class Restroom : GridComponent {
 		if (player.Bladder <= Mathf.Epsilon) {
 			animator.AnimationCompleted = openAndCloseDoorCompleteDelegate;
 			this.openAndCloseDoor();
+			player.ChangeState(ActorState.Upright);
+			OnDeactivate(player);
 		}
 	}
 
@@ -43,5 +49,25 @@ public class Restroom : GridComponent {
 	void openAndCloseDoorCompleteDelegate(tk2dSpriteAnimator sprite, tk2dSpriteAnimationClip clip) {
 		player.ChangeState (ActorState.Upright);
 		animator.AnimationCompleted = null;
+	}
+
+	/// <summary>
+	/// Called when an actor activates the grid component.
+	/// </summary>
+	public override void OnActivate(Actor Actor) {
+		if (audioSource && OpenDoorAudio) {
+			audioSource.clip = OpenDoorAudio;
+			audioSource.Play();
+		}
+	}
+
+	/// <summary>
+	/// Called when an actor de-activates the grid component.
+	/// </summary>
+	public override void OnDeactivate(Actor actor) {
+		if (audioSource && ToiletFlushAudio) {
+			audioSource.clip = ToiletFlushAudio;
+			audioSource.Play();
+		}
 	}
 }

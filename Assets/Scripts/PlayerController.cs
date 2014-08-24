@@ -16,8 +16,12 @@ public class PlayerController : Actor {
 	private bool bladderIsFull = false;	// Used to track if the player's bladder gauge is full.
 	private bool hungerIsFull = false; // Used to track if the player's hunger gauge is full.
 
+	private AudioSource audioSource;
+
 	public ScoreKeeper Score;
-	
+	public AudioClip WalkSound;
+	public AudioClip DrinkSound;
+
 	// Player traits.
 	private float relaxation = 0;
 	public float Relaxation {
@@ -55,7 +59,9 @@ public class PlayerController : Actor {
 	/// <summary>
 	/// Start hook.
 	/// </summary>
-	protected override void OnStart () {		
+	protected override void OnStart () {
+		audioSource = GetComponent<AudioSource>();
+
 		victoryText = GameObject.Find("Victory Text");
 		victoryText.GetComponent<MeshRenderer>().enabled = true;
 		victoryText.SetActive(false);
@@ -98,6 +104,7 @@ public class PlayerController : Actor {
 				// See if the player landed on any items.
 				if (CurrentSquare.Consumable) {
 					CurrentSquare.Consumable.OnUse();
+					audio.PlayOneShot(DrinkSound);
 					GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 					CurrentSquare.Consumable = null;
 					Score.Add (new ScoreItem(50, "Item"));
@@ -157,6 +164,9 @@ public class PlayerController : Actor {
 			// See if the player landed on any items.
 			if (CurrentSquare.Consumable) {
 				CurrentSquare.Consumable.OnUse();
+
+				audio.PlayOneShot(DrinkSound);
+
 				GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 				CurrentSquare.Consumable = null;
 				Score.Add (new ScoreItem(50, "Item"));
@@ -185,13 +195,16 @@ public class PlayerController : Actor {
 			else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
 				if (currentSquare.Component) {
 					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
+						currentSquare.Component.OnActivate(this);
 						((Restroom)(currentSquare.Component)).openAndCloseDoor();
 						ChangeState(ActorState.InRestroom);
 					}
 					else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
+						currentSquare.Component.OnActivate(this);
 						ChangeState (ActorState.InChair);
 					}
 					else if (currentSquare.Component is SnackBar) {
+						currentSquare.Component.OnActivate(this);
 						ChangeState (ActorState.InSnackBar);	
 					}
 				}
@@ -202,6 +215,7 @@ public class PlayerController : Actor {
 		         State == ActorState.InSnackBar) {
 			
 			if (Input.GetKeyDown(KeyCode.Space)) {
+				currentSquare.Component.OnDeactivate(this);
 				if (currentSquare.Component is Restroom) {
 					((Restroom)(currentSquare.Component)).openAndCloseDoor();
 				}
@@ -261,12 +275,13 @@ public class PlayerController : Actor {
 			animSleepSouth();
 			ToggleTowel(true);
 		}
-		else if (newState == ActorState.Upright) {
+		else if (newState == ActorState.Upright && State != ActorState.Walking) {
 			Idle();
 		}
 		else if (newState == ActorState.InSnackBar) {
 			transform.Translate(new Vector3(0, 0, 0.5f));
 			animAtSnackbar();
+			CurrentSquare.Component.GetComponent<AudioSource>().Play();
 		}
 
 		if (State == ActorState.InChair && newState == ActorState.Upright) {
@@ -274,6 +289,17 @@ public class PlayerController : Actor {
 		}
 		else if (State == ActorState.InSnackBar && newState != ActorState.InSnackBar) {
 			transform.Translate(new Vector3(0, 0, -0.5f));
+			CurrentSquare.Component.GetComponent<AudioSource>().Stop();
+		}
+
+		if (newState == ActorState.Walking) {
+			if (!audioSource.isPlaying || audioSource.clip != WalkSound) {
+				GetComponent<AudioSource>().clip = WalkSound;
+				GetComponent<AudioSource>().Play();
+			}
+		}
+		else {
+			GetComponent<AudioSource>().Stop();
 		}
 
 		base.ChangeState(newState);
