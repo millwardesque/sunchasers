@@ -40,6 +40,7 @@ public class GameState : MonoBehaviour {
 		set {
 			GameStateEnum oldState = state;
 			state = value;
+
 			MessageManager.Instance.SendToListeners(new GameStateChangeMessage(gameObject, "GameStateChange", oldState, state));
 		}
 	}
@@ -50,7 +51,7 @@ public class GameState : MonoBehaviour {
 	/// Start hook.
 	/// </summary>
 	public void Start() {
-		State = GameStateEnum.Running;
+		gameObject.GetComponent<ReadyCountdown>().StartCountdown();
 	}
 	
 	public void Update() {

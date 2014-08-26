@@ -8,6 +8,10 @@ public class RestartLevel : MonoBehaviour {
 	private ScoreKeeper scoreKeeper;
 	private PlayerController player;
 
+	void Awake () {
+		MessageManager.Instance.RegisterListener(new Listener("ReadyCountdownFinishedMessage", gameObject, "OnReadyCountdownFinishedMessage"));
+	}
+
 	// Use this for initialization
 	void Start () {
 		GameObject movementGridObject = GameObject.FindGameObjectWithTag("Movement Grid");
@@ -23,7 +27,9 @@ public class RestartLevel : MonoBehaviour {
 	void Update () {
 		// @DEBUG Use to restart level until UI button is present
 		if (Input.GetKeyUp(KeyCode.R)) {
-			Restart();
+			gameState.State = GameStateEnum.Paused;
+			GameObject.FindGameObjectWithTag("World").GetComponent<ReadyCountdown>().StartCountdown();
+
 		}
 	}
 
@@ -39,5 +45,9 @@ public class RestartLevel : MonoBehaviour {
 		gameState.State = GameStateEnum.Running;
 
 		Debug.Log("Level restarted.");
+	}
+
+	public void OnReadyCountdownFinishedMessage(Message message) {
+		Restart ();
 	}
 }

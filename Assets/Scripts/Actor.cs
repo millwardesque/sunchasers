@@ -162,6 +162,7 @@ public class Actor : MonoBehaviour {
 		case GameStateEnum.Paused:
 		case GameStateEnum.PlayerWon:
 		case GameStateEnum.PlayerLost:
+			animator.Stop ();
 			isRunning = false;
 			break;
 		case GameStateEnum.WaitingToStart:
