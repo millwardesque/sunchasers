@@ -49,7 +49,8 @@ public class CameraShake : MonoBehaviour {
 		}
 		else if (State == CameraShakeState.AtRest) { // @DEBUG. Manually trigger a camera shake.
 			if (Input.GetKeyUp(KeyCode.S)) {
-				State = CameraShakeState.Shaking;
+				Debug.Log ("Shaking camera.");
+				TriggerShake();
 			}
 		}
 	}

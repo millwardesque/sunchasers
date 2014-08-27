@@ -38,6 +38,11 @@ public class CameraZoom : MonoBehaviour {
 			if (gameCamera) {
 				gameCamera.transform.position = Vector3.Lerp(startPosition, endPosition, t) + new Vector3(0, 0, gameCamera.transform.position.z);
 			}
+
+			if (t > 1.0f) {
+				isZooming = false;
+				return;
+			}
 		}
 
 		if (Input.GetKeyUp(KeyCode.Z)) {
