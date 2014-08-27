@@ -78,8 +78,6 @@ public class PlayerController : Actor {
 		actorSprite = GetComponent<tk2dSprite>();
 
 		gameCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
-
-		Idle ();
 	}
 	
 	/// <summary>
@@ -324,6 +322,10 @@ public class PlayerController : Actor {
 		}
 		else if (realMessage.newState == GameStateEnum.PlayerLost) {
 			defeatText.SetActive(true);
+		}
+		else if (realMessage.newState == GameStateEnum.Running) {
+			renderer.enabled = true;
+			Idle ();
 		}
 	}
 

@@ -36,10 +36,6 @@ public class NPCManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		movementGrid = GameObject.FindGameObjectWithTag("Movement Grid").GetComponent<MovementGrid>();
-
-		for (int i = 0; i < MaxNPCs; ++i) {
-			GenerateNPC();
-		}
 	}
 
 	void Update() {
