@@ -71,7 +71,7 @@ public class GameTimer : MonoBehaviour {
 			isPaused = true;
 			break;
 		case GameStateEnum.WaitingToStart:
-			isPaused = false;
+			isPaused = true;
 			time = 0.0f;
 			hasElapsed = false;
 			break;

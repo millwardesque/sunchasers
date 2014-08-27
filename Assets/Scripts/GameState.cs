@@ -51,6 +51,7 @@ public class GameState : MonoBehaviour {
 	/// Start hook.
 	/// </summary>
 	public void Start() {
+		State = GameStateEnum.WaitingToStart;
 		gameObject.GetComponent<ReadyCountdown>().StartCountdown();
 	}
 	

@@ -42,7 +42,6 @@ public class ReadyCountdown : MonoBehaviour {
 		}
 
 		currentCountdown = (float)CountdownStart;
-		isRunning = false;
 		UpdateCountdownDisplay();
 	}
 	
@@ -53,7 +52,6 @@ public class ReadyCountdown : MonoBehaviour {
 		}
 		else if (currentCountdown > 0.0f) {
 			currentCountdown -= Time.deltaTime;
-
 			UpdateCountdownDisplay();
 		}
 		else {
@@ -92,6 +90,7 @@ public class ReadyCountdown : MonoBehaviour {
 	/// Stops the countdown.
 	/// </summary>
 	public void StopCountdown() {
+		Debug.Log ("Stopping countdown...");
 		CountdownText.gameObject.renderer.enabled = false;
 		isRunning = false;
 	}
