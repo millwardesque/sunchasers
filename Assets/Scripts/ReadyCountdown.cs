@@ -16,6 +16,7 @@ public class ReadyCountdownFinishedMessage : Message {
 public class ReadyCountdown : MonoBehaviour {
 	public int CountdownStart = 3;
 	public tk2dTextMesh CountdownText;
+	public AudioClip[] CountdownSounds;	// Holds the sound clips to play for each countdown integer in ascending order (i.e. when the countdown is 1, the sound at index 1 is played. When the countdown is 3, the sounds at index 3 is played.
 
 	private bool isRunning = false;
 
@@ -69,6 +70,10 @@ public class ReadyCountdown : MonoBehaviour {
 		int newDisplay = Mathf.CeilToInt(currentCountdown); // Round instead of floor so that the first countdown number appears onscreen slightly longer. This effectively makes the countdown last for CountdownStart + 0.5 seconds.
 		if (newDisplay != displayCountdown) {
 			displayCountdown = newDisplay;
+
+			if (CountdownSounds.Length > displayCountdown) {
+				audio.PlayOneShot(CountdownSounds[displayCountdown]);
+			}
 
 			if (CountdownText) {
 				CountdownText.text = string.Format ("Ready... {0}", displayCountdown);

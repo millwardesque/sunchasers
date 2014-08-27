@@ -53,6 +53,12 @@ public class GameState : MonoBehaviour {
 	public void Start() {
 		State = GameStateEnum.WaitingToStart;
 		gameObject.GetComponent<ReadyCountdown>().StartCountdown();
+
+		// Start by zooming out from the player 
+		PlayerController player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+		MovementGrid grid = GameObject.FindGameObjectWithTag("Movement Grid").GetComponent<MovementGrid>();
+		Vector2 startPosition = player.CurrentSquare.PixelCoords + new Vector2(grid.transform.position.x, grid.transform.position.y);
+		gameObject.GetComponent<CameraZoom>().ZoomCamera (startPosition, new Vector2(0, 0), 3, 1, 1.0f);
 	}
 	
 	public void Update() {

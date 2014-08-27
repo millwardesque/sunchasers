@@ -102,7 +102,9 @@ public class PlayerController : Actor {
 				// See if the player landed on any items.
 				if (CurrentSquare.Consumable) {
 					CurrentSquare.Consumable.OnUse();
-					audio.PlayOneShot(DrinkSound);
+
+					audioSource.PlayOneShot(DrinkSound);
+
 					GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 					CurrentSquare.Consumable = null;
 					Score.Add (new ScoreItem(50, "Item"));
@@ -163,7 +165,7 @@ public class PlayerController : Actor {
 			if (CurrentSquare.Consumable) {
 				CurrentSquare.Consumable.OnUse();
 
-				audio.PlayOneShot(DrinkSound);
+				audioSource.PlayOneShot(DrinkSound);
 
 				GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 				CurrentSquare.Consumable = null;
@@ -323,7 +325,7 @@ public class PlayerController : Actor {
 		else if (realMessage.newState == GameStateEnum.PlayerLost) {
 			defeatText.SetActive(true);
 		}
-		else if (realMessage.newState == GameStateEnum.Running) {
+		else if (realMessage.newState == GameStateEnum.Running || realMessage.newState == GameStateEnum.WaitingToStart) {
 			renderer.enabled = true;
 			Idle ();
 		}
