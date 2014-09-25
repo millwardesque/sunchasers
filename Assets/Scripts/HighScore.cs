@@ -14,7 +14,7 @@ public class HighScore : IComparable<HighScore> {
 		get { return name; }
 	}
 
-	public HighScore(int score, string name) {
+	public HighScore(string name, int score) {
 		this.name = name;
 		this.score = score;
 	}

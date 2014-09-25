@@ -94,7 +94,7 @@ public class Score
 
 		// Add the total score.
 		int totalScore = CalculateTotalScore();
-		breakdown += string.Format("##########\n");
+		breakdown += string.Format("==============\n");
 		breakdown += string.Format("Total Score: {0}", totalScore);
 
 		return breakdown;

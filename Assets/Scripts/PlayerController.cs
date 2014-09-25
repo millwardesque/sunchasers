@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -172,7 +173,7 @@ public class PlayerController : Actor {
 				Score.Add (new ScoreItem(50, "Item"));
 			}
 
-			if (Input.GetMouseButtonUp(0)) {
+			if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
 				Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
 				targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition).GridCoords;
 				Debug.Log(string.Format("Nearest grid square is {0}", targetSquare));
@@ -259,7 +260,8 @@ public class PlayerController : Actor {
 		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			Score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
-			
+
+			Debug.Log ("Called it!");
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 		}
 	}

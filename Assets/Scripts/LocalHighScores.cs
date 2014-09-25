@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,52 +8,38 @@ public class LocalHighScores : MonoBehaviour {
 	public ScoreKeeper scoreKeeper;
 
 	List<HighScore> scores = new List<HighScore>();
-	tk2dTextMesh scoreMesh;
+	Text scoreText;
 
 	void Awake () {
-		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
+		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "MyOnGameStateChange"));
 	}
 
 	// Use this for initialization
 	void Start () {
-		scoreMesh = gameObject.GetComponent<tk2dTextMesh>();
-		if (!scoreMesh) {
-			Debug.LogError("Error setting up local highscores: No text-mesh is available for rendering.");
+		scoreText = gameObject.GetComponent<Text>();
+		if (!scoreText) {
+			Debug.LogError("Error setting up local highscores: No text is available for rendering.");
 		}
+
+		// Load the high scores
+		FetchHighScores();
+
+		// Render the final list of high scores.
+		RenderScores();
 	}
 
 	/// <summary>
 	/// Waits for the player to win the game.
 	/// </summary>
 	/// <param name="message">Message.</param>
-	public void OnGameStateChange(Message message) {
+	public void MyOnGameStateChange(Message message) {
 		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
 		if (realMessage.newState == GameStateEnum.PlayerWon) {
-
-			// Load the high scores
-			FetchHighScores();
-
 			// Add the new score to the high-score list.
-			Add("CPM", scoreKeeper.Score.CalculateTotalScore());
+			Add(new HighScore("CPM", scoreKeeper.Score.CalculateTotalScore()));
 
 			// Render the final list of high scores.
 			RenderScores();
-
-			// Show the high-score list.
-			GetComponent<MeshRenderer>().enabled = true;
-			MeshRenderer[] meshes = GetComponentsInChildren<MeshRenderer>();
-			foreach (MeshRenderer mesh in meshes) {
-				mesh.enabled = true;
-			}
-		}
-		else { // For all other game states, hide the high-score list.
-			if (GetComponent<MeshRenderer>().enabled) {
-				GetComponent<MeshRenderer>().enabled = false;
-				MeshRenderer[] meshes = GetComponentsInChildren<MeshRenderer>();
-				foreach (MeshRenderer mesh in meshes) {
-					mesh.enabled = false;
-				}
-			}
 		}
 	}
 
@@ -62,9 +49,7 @@ public class LocalHighScores : MonoBehaviour {
 	/// <returns><c>true</c>, if add was attempted, <c>false</c> otherwise.</returns>
 	/// <param name="name">Name.</param>
 	/// <param name="score">Score.</param>
-	void Add(string name, int score) {
-		HighScore newScore = new HighScore(score, name);
-
+	void Add(HighScore newScore) {
 		// Figure out where to insert the score in the list.
 		for (int i = 0; i < scores.Count; ++i) {
 			HighScore highScore = scores[i];
@@ -76,7 +61,7 @@ public class LocalHighScores : MonoBehaviour {
 		}
 
 		// If we're still here, this score was lower than all the others so add it at the end.
-		scores.Add (newScore);
+		scores.Insert (scores.Count, newScore);
 	}
 
 	/// <summary>
@@ -104,13 +89,10 @@ public class LocalHighScores : MonoBehaviour {
 		for (int i = 0; i < NumberToShow; ++i) {
 			string prefix = "highscore" + i + "_";
 			if (PlayerPrefs.HasKey(prefix + "name") && PlayerPrefs.HasKey(prefix + "score")) {
-				scores.Add (new HighScore(PlayerPrefs.GetInt(prefix + "score"), PlayerPrefs.GetString(prefix + "name")));
+				HighScore newScore = new HighScore(PlayerPrefs.GetString(prefix + "name"), PlayerPrefs.GetInt(prefix + "score"));
+				Add (newScore);
 			}
 		}
-
-		// Order the scores for rendering.
-		scores.Sort();
-		scores.Reverse();
 	}
 
 	/// <summary>
@@ -127,7 +109,6 @@ public class LocalHighScores : MonoBehaviour {
 				break;
 			}
 		}
-		scoreMesh.text = string.Format("High Scores\n{0}", highScoreText);
-		scoreMesh.Commit();
+		scoreText.text = highScoreText;
 	}
 }
