@@ -11,7 +11,7 @@ public class LocalHighScores : MonoBehaviour {
 	Text scoreText;
 
 	void Awake () {
-		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "MyOnGameStateChange"));
+		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
 	}
 
 	// Use this for initialization
@@ -32,7 +32,7 @@ public class LocalHighScores : MonoBehaviour {
 	/// Waits for the player to win the game.
 	/// </summary>
 	/// <param name="message">Message.</param>
-	public void MyOnGameStateChange(Message message) {
+	public void OnGameStateChange(Message message) {
 		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
 		if (realMessage.newState == GameStateEnum.PlayerWon) {
 			// Add the new score to the high-score list.

@@ -108,11 +108,10 @@ public sealed class MessageManager {
 				continue;
 			}
 
-			Debug.Log (recipient.RecipientMethod);
-		    recipient.Recipient.BroadcastMessage(recipient.RecipientMethod, message, SendMessageOptions.DontRequireReceiver);
+		    recipient.Recipient.SendMessage(recipient.RecipientMethod, message, SendMessageOptions.DontRequireReceiver);
 			listenerCount++;
 		}
 		
-		Debug.Log (string.Format ("MESSAGE <L {0}>: {1}", listenerCount, message));
+		Debug.Log (string.Format ("MESSAGE <{0} listeners>: {1}", listenerCount, message));
 	}
 }

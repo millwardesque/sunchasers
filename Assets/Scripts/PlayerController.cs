@@ -261,7 +261,6 @@ public class PlayerController : Actor {
 			GameTimer timer = world.GetComponent<GameTimer>();
 			Score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
 
-			Debug.Log ("Called it!");
 			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
 		}
 	}
