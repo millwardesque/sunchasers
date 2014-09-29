@@ -3,8 +3,14 @@ using System.Collections;
 
 public class ScorePanel : MonoBehaviour {
 	private CanvasGroup canvasGroup;
-	public GameObject DefaultWinPanel;
-	private CanvasGroup cnvDefaultWinPanel;
+
+	public GameObject LocalHighScorePanel;
+	private CanvasGroup cnvLocalHighScorePanel;
+
+	public GameObject ScoreBreakdownPanel;
+	private CanvasGroup cnvScoreBreakdownPanel;
+
+	private bool visible = true;
 
 	void Awake () {
 		// Save the canvas group for later.
@@ -13,17 +19,34 @@ public class ScorePanel : MonoBehaviour {
 			throw new UnityException("Error setting up score panel: No canvas group is attached to the main panel.");
 		}
 
-		// Save the default win panels's canvas for later.
-		if (!DefaultWinPanel) {
-			throw new UnityException("Error setting up score panel: No default win-panel is set.");
+		// Save the sub-panels canvases for later.
+		if (!LocalHighScorePanel) {
+			throw new UnityException("Error setting up score panel: No local highscore panel is set.");
 		}
-		else if (!DefaultWinPanel.GetComponent<CanvasGroup>()) {
-			throw new UnityException("Error setting up score panel: The default win-panel doesn't have a canvas group.");
+		else if (!LocalHighScorePanel.GetComponent<CanvasGroup>()) {
+			throw new UnityException("Error setting up score panel: The local highscore panel doesn't have a canvas group.");
 		}
-		cnvDefaultWinPanel = DefaultWinPanel.GetComponent<CanvasGroup>();
+		cnvLocalHighScorePanel = LocalHighScorePanel.GetComponent<CanvasGroup>();
+
+		if (!ScoreBreakdownPanel) {
+			throw new UnityException("Error setting up score panel: No score breakdown panel is set.");
+		}
+		else if (!ScoreBreakdownPanel.GetComponent<CanvasGroup>()) {
+			throw new UnityException("Error setting up score panel: The score breakdown doesn't have a canvas group.");
+		}
+		cnvScoreBreakdownPanel = ScoreBreakdownPanel.GetComponent<CanvasGroup>();
 
 		// Register the appropriate event listeners.
 		MessageManager.Instance.RegisterListener(new Listener("GameStateChange", gameObject, "OnGameStateChange"));
+	}
+
+	void Update() {
+		if (Input.GetKeyDown(KeyCode.L)) {
+			GameObject.FindGameObjectWithTag("World").GetComponent<GameState>().State = GameStateEnum.PlayerLost;
+		}
+		else if (Input.GetKeyDown(KeyCode.W)) {
+			GameObject.FindGameObjectWithTag("World").GetComponent<GameState>().State = GameStateEnum.PlayerWon;
+		}
 	}
 	
 	/// <summary>
@@ -34,7 +57,12 @@ public class ScorePanel : MonoBehaviour {
 		GameStateChangeMessage realMessage = (GameStateChangeMessage)message;
 
 		if (realMessage.newState == GameStateEnum.PlayerWon) {		// Show the scores if the player has won.
+			ShowScoreBreakdownPanel();
 			Show();
+		}
+		else if (realMessage.newState == GameStateEnum.PlayerLost) {
+			ShowLocalHighScorePanel();
+			Show ();
 		}
 		else {
 			Hide ();
@@ -49,21 +77,7 @@ public class ScorePanel : MonoBehaviour {
 		canvasGroup.blocksRaycasts = true;
 		canvasGroup.interactable = true;
 
-		// Hide all internal panels except for the default win panel
-		CanvasGroup[] childCanvases = GetComponentsInChildren<CanvasGroup>();
-		foreach (CanvasGroup cnvChild in childCanvases) {
-			if (cnvChild == canvasGroup) {
-				continue;
-			}
-
-			cnvChild.alpha = 0.0f;
-			cnvChild.blocksRaycasts = false;
-			cnvChild.interactable = false;
-		}
-
-		cnvDefaultWinPanel.alpha = 1.0f;
-		cnvDefaultWinPanel.blocksRaycasts = true;
-		cnvDefaultWinPanel.interactable = true;
+		visible = true;
 	}
 
 	/// <summary>
@@ -73,5 +87,57 @@ public class ScorePanel : MonoBehaviour {
 		canvasGroup.alpha = 0.0f;
 		canvasGroup.blocksRaycasts = false;
 		canvasGroup.interactable = false;
+		visible = false;
+	}
+
+	/// <summary>
+	/// Shows the score breakdown panel the next time the score panel is visible / open.
+	/// </summary>
+	private void ShowScoreBreakdownPanel() {
+		// Hide all internal panels except for the score breakdown panel
+		CanvasGroup[] childCanvases = GetComponentsInChildren<CanvasGroup>();
+		foreach (CanvasGroup cnvChild in childCanvases) {
+			if (cnvChild == canvasGroup) {
+				continue;
+			}
+			
+			cnvChild.alpha = 0.0f;
+			cnvChild.blocksRaycasts = false;
+			cnvChild.interactable = false;
+		}
+		
+		cnvScoreBreakdownPanel.alpha = 1.0f;
+		cnvScoreBreakdownPanel.blocksRaycasts = true;
+		cnvScoreBreakdownPanel.interactable = true;
+	}
+
+	/// <summary>
+	/// Shows the score breakdown panel the next time the score panel is visible / open.
+	/// </summary>
+	private void ShowLocalHighScorePanel() {
+		// Hide all internal panels except for the local highscore panel
+		CanvasGroup[] childCanvases = GetComponentsInChildren<CanvasGroup>();
+		foreach (CanvasGroup cnvChild in childCanvases) {
+			if (cnvChild == canvasGroup) {
+				continue;
+			}
+			
+			cnvChild.alpha = 0.0f;
+			cnvChild.blocksRaycasts = false;
+			cnvChild.interactable = false;
+		}
+		
+		cnvLocalHighScorePanel.alpha = 1.0f;
+		cnvLocalHighScorePanel.blocksRaycasts = true;
+		cnvLocalHighScorePanel.interactable = true;
+	}
+
+	public void Toggle() {
+		if (visible) {
+			Hide();
+		}
+		else {
+			Show();
+		}
 	}
 }
