@@ -21,7 +21,7 @@ Luckily, you'll also have some help:
 * Down: Move your character down.
 * Left: Move your character left.
 * Right: Move your character right.
-* Space: Relax on a chair OR use the washroom (entrance on the left side only) OR use the snackbar.
+* Left Control: Relax on a chair OR use the washroom (entrance on the left side only) OR use the snackbar.
 * R: Restart the level.
 * P: Pause / unpause the game.
 
