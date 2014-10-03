@@ -28,6 +28,12 @@ public class LocalHighScores : MonoBehaviour {
 		RenderScores();
 	}
 
+	void Update() {
+		if (Input.GetKeyDown(KeyCode.C)) {
+			ClearHighScores();
+		}
+	}
+
 	/// <summary>
 	/// Waits for the player to win the game.
 	/// </summary>
@@ -73,21 +79,8 @@ public class LocalHighScores : MonoBehaviour {
 
 		// @TODO Incorporate level name into highscore keys.
 
-		// If we haven't generated any user-created highscores yet, load the defaults
-		if (!PlayerPrefs.HasKey("highscore0_name")) {
-			for (int i = 0; i < NumberToShow; ++i) {
-				int score = Random.Range(50, 150);
-				string name = "Player" + i.ToString();
-
-				// Save default high scores to local storage.
-				string prefix = "highscore" + i + "_";
-				PlayerPrefs.SetInt (prefix + "score", score);
-				PlayerPrefs.SetString (prefix + "name", name);
-			}
-		}
-
-		// Load the high-scores from local storage.
-		for (int i = 0; i < NumberToShow; ++i) {
+		// Load the high-scores from persistent storage.
+		for (int i = 0; i < PlayerPrefs.GetInt ("highscore_count", 0); ++i) {
 			string prefix = "highscore" + i + "_";
 			if (PlayerPrefs.HasKey(prefix + "name") && PlayerPrefs.HasKey(prefix + "score")) {
 				HighScore newScore = new HighScore(PlayerPrefs.GetString(prefix + "name"), PlayerPrefs.GetInt(prefix + "score"));
@@ -117,6 +110,32 @@ public class LocalHighScores : MonoBehaviour {
 	/// Saves the current high-score list.
 	/// </summary>
 	void SaveHighScores() {
+		// Save the high-scores to persistent storage.
+		int i = 0;
+		for (i = 0; i < scores.Count; ++i) {
+			string prefix = "highscore" + i + "_";
+			PlayerPrefs.SetString (prefix + "name", scores[i].Name);
+			PlayerPrefs.SetInt (prefix + "score", scores[i].Score);
+		}
+		PlayerPrefs.SetInt ("highscore_count", i);
 		PlayerPrefs.Save();
+	}
+
+	/// <summary>
+	/// Clears all the saved highscores in the system.
+	/// </summary>
+	void ClearHighScores() {
+		// Delete the scores in local storage
+		for (int i = 0; i < PlayerPrefs.GetInt("highscore_count", 0); ++i) {
+			string prefix = "highscore" + i + "_";
+			PlayerPrefs.DeleteKey(prefix + "name");
+			PlayerPrefs.DeleteKey(prefix + "score");
+		}
+		PlayerPrefs.SetInt ("highscore_count", 0);
+		PlayerPrefs.Save ();
+
+		// Empty the in-memory list.
+		scores.Clear ();
+		RenderScores ();
 	}
 }
