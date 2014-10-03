@@ -3,8 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class NPCManager : MonoBehaviour {
-	public GameObject[] NPCTypes;	// Types of NPCs to generate.
-	public int MaxNPCs = 0;			// Max items that can be onscreen at once. Zero for infinite.
+	public GameObject[] StartingNPCs;	// NPCs to place in the scene.
 
 	private float chanceToUnseatPlayer = 0.1f;
 	private MovementGrid movementGrid;
@@ -28,9 +27,7 @@ public class NPCManager : MonoBehaviour {
 		}
 		
 		// Re-seed the NPCs in starting locations
-		for (int i = 0; i < MaxNPCs; ++i) {
-			GenerateNPC();
-		}
+		GenerateNPCs();
 	}
 
 	// Use this for initialization
@@ -41,53 +38,59 @@ public class NPCManager : MonoBehaviour {
 	void Update() {
 		chanceToUnseatPlayer += Time.deltaTime * 0.001f;
 
-		if (Input.GetKeyUp("t")) {
+		// Force an aggro NPC to target the player.
+		if (Input.GetKeyDown("t")) {
 			GameObject[] npcs = GameObject.FindGameObjectsWithTag("NPC");
-			List<NPCAggressive> aggroNPCs = new List<NPCAggressive>();
 
+			// Make a list of aggro NPCs.
+			List<NPCAggressive> aggroNPCs = new List<NPCAggressive>();
 			foreach (GameObject npc in npcs) {
 				if (npc.GetComponent<NPCAggressive>()) {
 					aggroNPCs.Add(npc.GetComponent<NPCAggressive>());
 				}
 			}
 			chanceToUnseatPlayer = 0.0f;
-			int npcIndex = Random.Range (0, aggroNPCs.Count - 1);
-			aggroNPCs[npcIndex].TargetPlayerSquare();
+			// Pick an aggro NPC and target the player.
+			if (aggroNPCs.Count > 0) {
+				int npcIndex = Random.Range (0, aggroNPCs.Count - 1);
+				aggroNPCs[npcIndex].TargetPlayerSquare();
+			}
 		}
 	}
 
 	/// <summary>
-	/// Creates an NPC.
+	/// Creates the NPCs for the level
 	/// </summary>
-	void GenerateNPC() {
-		// Pick a new row / column for the item to be created at.
-		List<GridSquare> potentialSquares = new List<GridSquare>();
-		for (int row = 0; row < movementGrid.NumRows; row++) {
-			for (int column = 0; column < movementGrid.NumColumns; column++) {
-				GridSquare gridSquare = movementGrid.SquarePositions[row][column];
-				if (gridSquare.IsTraversable && gridSquare.IsOccupied() == false && (gridSquare.Component == null || gridSquare.Component.tag == "Chair")) {
-					potentialSquares.Add (gridSquare);
+	void GenerateNPCs() {
+		foreach (GameObject npc in StartingNPCs) {
+			// Pick a new row / column for the item to be created at.
+			List<GridSquare> potentialSquares = new List<GridSquare>();
+			for (int row = 0; row < movementGrid.NumRows; row++) {
+				for (int column = 0; column < movementGrid.NumColumns; column++) {
+					GridSquare gridSquare = movementGrid.SquarePositions[row][column];
+					if (gridSquare.IsTraversable && gridSquare.IsOccupied() == false && (gridSquare.Component == null || gridSquare.Component.tag == "Chair")) {
+						potentialSquares.Add (gridSquare);
+					}
 				}
 			}
-		}
-		if (potentialSquares.Count == 0) {
-			Debug.Log("Couldn't find a valid square for the new NPC. Bailing.");
-			return;
-		}
-		GridSquare newGridSquare = potentialSquares[Random.Range(0, potentialSquares.Count)];
-				
-		// Create a new NPC.
-		int npcIndex = Random.Range(0, NPCTypes.Length);
-		GameObject newNPC = (GameObject)GameObject.Instantiate(NPCTypes[npcIndex]);
-		
-		// Figure out what kind of NPC this is.
-		if (newNPC.GetComponent<NPCAggressive>()) {
-			newNPC.GetComponent<NPCAggressive>().StartRow = newGridSquare.Row;
-			newNPC.GetComponent<NPCAggressive>().StartColumn = newGridSquare.Column;
-		}
-		else if (newNPC.GetComponent<NPCBasic>()) {
-			newNPC.GetComponent<NPCBasic>().StartRow = newGridSquare.Row;
-			newNPC.GetComponent<NPCBasic>().StartColumn = newGridSquare.Column;	
+			if (potentialSquares.Count == 0) {
+				Debug.Log("Couldn't find a valid square for new NPCs. Bailing.");
+				return;
+			}
+			GridSquare newGridSquare = potentialSquares[Random.Range(0, potentialSquares.Count)];
+					
+			// Create a new NPC.
+			GameObject newNPC = (GameObject)GameObject.Instantiate(npc);
+			
+			// Figure out what kind of NPC this is.
+			if (newNPC.GetComponent<NPCAggressive>()) {
+				newNPC.GetComponent<NPCAggressive>().StartRow = newGridSquare.Row;
+				newNPC.GetComponent<NPCAggressive>().StartColumn = newGridSquare.Column;
+			}
+			else if (newNPC.GetComponent<NPCBasic>()) {
+				newNPC.GetComponent<NPCBasic>().StartRow = newGridSquare.Row;
+				newNPC.GetComponent<NPCBasic>().StartColumn = newGridSquare.Column;	
+			}
 		}
 	}
 }
