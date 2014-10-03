@@ -37,6 +37,7 @@ public class LocalHighScores : MonoBehaviour {
 		if (realMessage.newState == GameStateEnum.PlayerWon) {
 			// Add the new score to the high-score list.
 			Add(new HighScore("CPM", scoreKeeper.Score.CalculateTotalScore()));
+			SaveHighScores();
 
 			// Render the final list of high scores.
 			RenderScores();
@@ -110,5 +111,12 @@ public class LocalHighScores : MonoBehaviour {
 			}
 		}
 		scoreText.text = highScoreText;
+	}
+
+	/// <summary>
+	/// Saves the current high-score list.
+	/// </summary>
+	void SaveHighScores() {
+		PlayerPrefs.Save();
 	}
 }
