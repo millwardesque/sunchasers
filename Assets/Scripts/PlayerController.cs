@@ -193,7 +193,7 @@ public class PlayerController : Actor {
 			else if (Input.GetKeyDown(KeyCode.DownArrow)) {
 				WalkSouth ();
 			}
-			else if (Input.GetKeyDown(KeyCode.LeftShift)) {	// See if the player is trying to enter a building.
+			else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
 				if (currentSquare.Component) {
 					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
 						currentSquare.Component.OnActivate(this);
@@ -215,7 +215,7 @@ public class PlayerController : Actor {
 		         State == ActorState.InRestroom ||
 		         State == ActorState.InSnackBar) {
 			
-			if (Input.GetKeyDown(KeyCode.LeftShift)) {
+			if (Input.GetKeyDown(KeyCode.Space)) {
 				currentSquare.Component.OnDeactivate(this);
 				if (currentSquare.Component is Restroom) {
 					((Restroom)(currentSquare.Component)).openAndCloseDoor();
