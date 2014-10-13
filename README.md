@@ -16,7 +16,7 @@ Luckily, you'll also have some help:
 * Some chairs are especially luxurious and increase your relaxation at a faster rate than the regular chairs.
 
 # Controls
-* Left click: Move your character to the clicked square. Player must be upright or walking, and player will not sit automatically upon arrival at the square.
+* Space: Move your character to the clicked square. Player must be upright or walking, and player will not sit automatically upon arrival at the square.
 * Up: Move your character up.
 * Down: Move your character down.
 * Left: Move your character left.
