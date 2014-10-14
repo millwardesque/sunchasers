@@ -9,7 +9,8 @@ public class PlayerController : Actor {
 	private GameObject towel;
 
 	private GridCoordinates targetSquare = new GridCoordinates(-1, -1);	// Target square used when the user clicks a grid square.
-	private List<GridCoordinates> pathToTarget = new List<GridCoordinates>();	// A list of squares that lead to the target square.
+	private List<GridCoordinates> pathToTarget = null;	// A list of squares that lead to the target square.
+	private bool useOnArrival = false;	// Flag that can be set to cause the player to automatically 'use' a grid square's component upon arrival.
 
 	private GameObject world;
 	private Camera gameCamera;
@@ -79,6 +80,11 @@ public class PlayerController : Actor {
 		actorSprite = GetComponent<tk2dSprite>();
 
 		gameCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
+	
+		// Set the movement variables to their default state.
+		targetSquare = new GridCoordinates(-1, -1);
+		pathToTarget = null;
+		useOnArrival = true;
 	}
 	
 	/// <summary>
@@ -88,183 +94,26 @@ public class PlayerController : Actor {
 		if (!isRunning) {
 			return;
 		}
-		
+
+		// State-specific behaviours.
 		if (State == ActorState.Walking) {
-			Vector3 distance = movementDirection * WalkSpeed * Time.deltaTime;
-
-			// Update the player's meters.
-			Bladder += BladderIncreaseRate * Time.deltaTime;
-			Hunger += HungerIncreaseRate * Time.deltaTime;
-			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
-			
-			if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
-				distance = movementTarget - transform.position;
-
-				// See if the player landed on any items.
-				if (CurrentSquare.Consumable) {
-					CurrentSquare.Consumable.OnUse();
-
-					audioSource.PlayOneShot(DrinkSound);
-
-					GameObject.Destroy(CurrentSquare.Consumable.gameObject);
-					CurrentSquare.Consumable = null;
-					Score.Add (new ScoreItem(50, "Item"));
-				}
-
-				// Allow player to walk without pausing at each square
-				if (pathToTarget != null && pathToTarget.Count > 0) {
-					FindNextSquare();
-				}
-				else if (Input.GetKey(KeyCode.RightArrow)) {
-					WalkEast ();
-					CancelAutoPathfind();
-				}
-				else if (Input.GetKey(KeyCode.LeftArrow)) {
-					WalkWest ();
-					CancelAutoPathfind();
-				}
-				else if (Input.GetKey(KeyCode.UpArrow)) {
-					WalkNorth ();
-					CancelAutoPathfind();
-				}
-				else if (Input.GetKey(KeyCode.DownArrow)) {
-					WalkSouth ();
-					CancelAutoPathfind();
-				}
-				else {
-					ChangeState (ActorState.Upright);
-				}
-			}
-			else {
-				if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
-					if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0) {
-						WalkEast ();
-					}
-					else if (Input.GetKeyDown(KeyCode.LeftArrow) && distance.x >= 0) {
-						WalkWest ();
-					}
-				}
-				else if (Mathf.Abs(distance.x) <= Mathf.Abs (distance.y)) {
-					if (Input.GetKeyDown(KeyCode.UpArrow) && distance.y < 0) {
-						WalkNorth ();
-					}
-					else if (Input.GetKeyDown(KeyCode.DownArrow) && distance.y >= 0) {
-						WalkSouth ();
-					}
-				}
-			}
-
-			transform.Translate(distance);
+			OnUpdateWalking();
 		}
 		else if (State == ActorState.Upright) {
-			// Update the player's meters.
-			Bladder += BladderIncreaseRate * Time.deltaTime;
-			Hunger += HungerIncreaseRate * Time.deltaTime;
-			Relaxation -= RelaxationDecreaseRate * Time.deltaTime;
-
-			// See if the player landed on any items.
-			if (CurrentSquare.Consumable) {
-				CurrentSquare.Consumable.OnUse();
-
-				audioSource.PlayOneShot(DrinkSound);
-
-				GameObject.Destroy(CurrentSquare.Consumable.gameObject);
-				CurrentSquare.Consumable = null;
-				Score.Add (new ScoreItem(50, "Item"));
-			}
-
-			if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
-				Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
-				targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition).GridCoords;
-				Debug.Log(string.Format("Nearest grid square is {0}", targetSquare));
-
-				pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare);
-				FindNextSquare();
-			}
-			else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-				WalkEast ();
-			}
-			else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-				WalkWest ();
-			}
-			else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-				WalkNorth ();
-			}
-			else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-				WalkSouth ();
-			}
-			else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
-				if (currentSquare.Component) {
-					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
-						currentSquare.Component.OnActivate(this);
-						((Restroom)(currentSquare.Component)).openAndCloseDoor();
-						ChangeState(ActorState.InRestroom);
-					}
-					else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
-						currentSquare.Component.OnActivate(this);
-						ChangeState (ActorState.InChair);
-					}
-					else if (currentSquare.Component is SnackBar) {
-						currentSquare.Component.OnActivate(this);
-						ChangeState (ActorState.InSnackBar);	
-					}
-				}
-			}
+			OnUpdateUpright ();
 		}
 		else if (State == ActorState.InChair ||
 		         State == ActorState.InRestroom ||
 		         State == ActorState.InSnackBar) {
-			
-			if (Input.GetKeyDown(KeyCode.Space)) {
-				currentSquare.Component.OnDeactivate(this);
-				if (currentSquare.Component is Restroom) {
-					((Restroom)(currentSquare.Component)).openAndCloseDoor();
-				}
-				ChangeState(ActorState.Upright);
-			}
-			else if (currentSquare.Component) {				
-				currentSquare.Component.OnUpdate();
-			}
-		}
-		
-		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon) {
-			Relaxation = 0.0f;
-			if (State == ActorState.InChair) {
-				ChangeState(ActorState.Upright);
-			}
-
-			if (!bladderIsFull) {	// Ensure the camera only shakes when the player reaches full-bladder and not every frame after.
-				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraShake>().TriggerShake();
-			}
-			bladderIsFull = true;
-		}
-		else {
-			bladderIsFull = false;
+			OnUpdateUsingComponent();
 		}
 
-		if (Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
-			Relaxation = 0.0f;
-			if (State == ActorState.InChair) {
-				ChangeState(ActorState.Upright);
-			}
-
-			if (!hungerIsFull) {	// Ensure the camera only shakes when the player reaches full-hunger and not every frame after.
-				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraShake>().TriggerShake();
-			}
-			hungerIsFull = true;
-		}
-		else {
-			hungerIsFull = false;
-		}
-
-		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
-			GameTimer timer = world.GetComponent<GameTimer>();
-			Score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
-
-			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
-		}
+		// Process changes to the player's stats.
+		UpdateBladder();
+		UpdateHunger();
+		UpdateRelaxation();
 	}
-
+	
 	/// <summary>
 	/// Changes the actor's state.
 	/// </summary>
@@ -349,6 +198,238 @@ public class PlayerController : Actor {
 		victoryText.SetActive(false);
 		defeatText.SetActive(false);
 		ToggleTowel(false);
+	}
+
+	/// <summary>
+	/// Updates the player's stats
+	/// </summary>
+	/// <param name="deltaTime">Delta time.</param>
+	protected void UpdateStats(float deltaTime) {
+		Bladder += BladderIncreaseRate * deltaTime;
+		Hunger += HungerIncreaseRate * deltaTime;
+		Relaxation -= RelaxationDecreaseRate * TdeltaTime;
+	}
+
+	/// <summary>
+	/// Called in the Update function if the player is in the Upright state.
+	/// </summary>
+	protected void OnUpdateUpright() {
+		UpdateStats(Time.deltaTime);
+		TryToConsume();
+		
+		if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+			Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
+			targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition).GridCoords;
+			Debug.Log(string.Format("Nearest grid square is {0}", targetSquare));
+			
+			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare);
+			FindNextSquare();
+		}
+		else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+			WalkEast ();
+		}
+		else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+			WalkWest ();
+		}
+		else if (Input.GetKeyDown(KeyCode.UpArrow)) {
+			WalkNorth ();
+		}
+		else if (Input.GetKeyDown(KeyCode.DownArrow)) {
+			WalkSouth ();
+		}
+		else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
+			if (currentSquare.Component) {
+				if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
+					currentSquare.Component.OnActivate(this);
+					((Restroom)(currentSquare.Component)).openAndCloseDoor();
+					ChangeState(ActorState.InRestroom);
+				}
+				else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
+					currentSquare.Component.OnActivate(this);
+					ChangeState (ActorState.InChair);
+				}
+				else if (currentSquare.Component is SnackBar) {
+					currentSquare.Component.OnActivate(this);
+					ChangeState (ActorState.InSnackBar);	
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// Called in the Update function if the player is in the Walking state.
+	/// </summary>
+	protected void OnUpdateWalking() {
+		Vector3 distance = movementDirection * WalkSpeed * Time.deltaTime;
+		UpdateStats(Time.deltaTime);
+		
+		if (distance.magnitude >= (movementTarget - transform.position).magnitude) {
+			distance = movementTarget - transform.position;
+
+			TryToConsume();
+			
+			// Allow player to walk without pausing at each square
+			if (pathToTarget != null && pathToTarget.Count > 0) {
+				FindNextSquare();
+			}
+			else if (pathToTarget != null && pathToTarget.Count == 0) {
+				if (currentSquare.Component) {
+					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
+						currentSquare.Component.OnActivate(this);
+						((Restroom)(currentSquare.Component)).openAndCloseDoor();
+						ChangeState(ActorState.InRestroom);
+					}
+					else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
+						currentSquare.Component.OnActivate(this);
+						ChangeState (ActorState.InChair);
+					}
+					else if (currentSquare.Component is SnackBar) {
+						currentSquare.Component.OnActivate(this);
+						ChangeState (ActorState.InSnackBar);	
+					}
+					else {
+						ChangeState(ActorState.Upright);
+					}
+				}
+			}
+			else if (Input.GetKey(KeyCode.RightArrow)) {
+				WalkEast ();
+				CancelAutoPathfind();
+			}
+			else if (Input.GetKey(KeyCode.LeftArrow)) {
+				WalkWest ();
+				CancelAutoPathfind();
+			}
+			else if (Input.GetKey(KeyCode.UpArrow)) {
+				WalkNorth ();
+				CancelAutoPathfind();
+			}
+			else if (Input.GetKey(KeyCode.DownArrow)) {
+				WalkSouth ();
+				CancelAutoPathfind();
+			}
+			else {
+				ChangeState (ActorState.Upright);
+			}
+		}
+		else {
+			if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
+				if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0) {
+					WalkEast ();
+				}
+				else if (Input.GetKeyDown(KeyCode.LeftArrow) && distance.x >= 0) {
+					WalkWest ();
+				}
+			}
+			else if (Mathf.Abs(distance.x) <= Mathf.Abs (distance.y)) {
+				if (Input.GetKeyDown(KeyCode.UpArrow) && distance.y < 0) {
+					WalkNorth ();
+				}
+				else if (Input.GetKeyDown(KeyCode.DownArrow) && distance.y >= 0) {
+					WalkSouth ();
+				}
+			}
+		}
+		
+		transform.Translate(distance);
+	}
+
+	/// <summary>
+	/// Called in the Update function if the user is using a component like a chair, the washroom, or snackbar.
+	/// </summary>
+	protected void OnUpdateUsingComponent() {
+		if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+			currentSquare.Component.OnDeactivate(this);
+			if (currentSquare.Component is Restroom) {
+				((Restroom)(currentSquare.Component)).openAndCloseDoor();
+			}
+			ChangeState(ActorState.Upright);
+			
+			Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
+			targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition).GridCoords;
+			Debug.Log(string.Format("Nearest grid square is {0}", targetSquare));
+			
+			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare);
+			FindNextSquare();
+		}
+		else if (Input.GetKeyDown(KeyCode.Space)) {
+			currentSquare.Component.OnDeactivate(this);
+			if (currentSquare.Component is Restroom) {
+				((Restroom)(currentSquare.Component)).openAndCloseDoor();
+			}
+			ChangeState(ActorState.Upright);
+		}
+		else if (currentSquare.Component) {				
+			currentSquare.Component.OnUpdate();
+		}
+	}
+
+	/// <summary>
+	/// Updates the player's bladder state.
+	/// </summary>
+	protected void UpdateBladder() {
+		if (Mathf.Abs(Bladder - 100.0f) <= Mathf.Epsilon) {
+			Relaxation = 0.0f;
+			if (State == ActorState.InChair) {
+				ChangeState(ActorState.Upright);
+			}
+			
+			if (!bladderIsFull) {	// Ensure the camera only shakes when the player reaches full-bladder and not every frame after.
+				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraShake>().TriggerShake();
+			}
+			bladderIsFull = true;
+		}
+		else {
+			bladderIsFull = false;
+		}
+	}
+
+	/// <summary>
+	/// Updates the player's hunger state.
+	/// </summary>
+	protected void UpdateHunger() {
+		if (Mathf.Abs(Hunger - 100.0f) <= Mathf.Epsilon) {
+			Relaxation = 0.0f;
+			if (State == ActorState.InChair) {
+				ChangeState(ActorState.Upright);
+			}
+			
+			if (!hungerIsFull) {	// Ensure the camera only shakes when the player reaches full-hunger and not every frame after.
+				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraShake>().TriggerShake();
+			}
+			hungerIsFull = true;
+		}
+		else {
+			hungerIsFull = false;
+		}
+	}
+
+	/// <summary>
+	/// Updates the player's relaxation state.
+	/// </summary>
+	protected void UpdateRelaxation() {
+		if (Mathf.Abs(Relaxation - 100.0f) <= Mathf.Epsilon) {
+			GameTimer timer = world.GetComponent<GameTimer>();
+			Score.Add (new ScoreItem((int)(timer.duration - timer.Elapsed()), "Time"));
+			
+			world.GetComponent<GameState>().State = GameStateEnum.PlayerWon;
+		}
+	}
+
+	/// <summary>
+	/// Tries to consume if the current square has a consumable attached.
+	/// </summary>
+	/// <returns><c>true</c>, if a consumable was used, <c>false</c> otherwise.</returns>
+	protected bool TryToConsume() {
+		if (CurrentSquare.Consumable) {
+			CurrentSquare.Consumable.OnUse();
+			
+			audioSource.PlayOneShot(DrinkSound);
+			
+			GameObject.Destroy(CurrentSquare.Consumable.gameObject);
+			CurrentSquare.Consumable = null;
+			Score.Add (new ScoreItem(50, "Item"));
+		}
 	}
 
 	protected void WalkNorth() {
