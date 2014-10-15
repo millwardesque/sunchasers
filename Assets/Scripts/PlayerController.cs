@@ -277,22 +277,30 @@ public class PlayerController : Actor {
 			if (pathToTarget.Count > 0) {
 				FindNextSquare();
 			}
-			/*else if (Input.GetKey(KeyCode.RightArrow)) {
-				WalkEast ();
-				CancelAutoPathfind();
+			else if (Input.GetKey(KeyCode.RightArrow) && CanWalkTo (0, 1)) {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
+				useOnArrival = false;
+				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 			}
-			else if (Input.GetKey(KeyCode.LeftArrow)) {
-				WalkWest ();
-				CancelAutoPathfind();
+			else if (Input.GetKey(KeyCode.LeftArrow) && CanWalkTo (0, -1)) {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1].GridCoords);
+				useOnArrival = false;
+				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 			}
-			else if (Input.GetKey(KeyCode.UpArrow)) {
-				WalkNorth ();
-				CancelAutoPathfind();
+			else if (Input.GetKey(KeyCode.UpArrow) && CanWalkTo (1, 0)) {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column].GridCoords);
+				useOnArrival = false;
+				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 			}
-			else if (Input.GetKey(KeyCode.DownArrow)) {
-				WalkSouth ();
-				CancelAutoPathfind();
-			}*/
+			else if (Input.GetKey(KeyCode.DownArrow) && CanWalkTo (-1, 0)) {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column].GridCoords);
+				useOnArrival = false;
+				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
+			}
 			else {
 				if (useOnArrival) {
 					if (!TryToUseComponent(currentSquare.Component)) {
@@ -305,24 +313,36 @@ public class PlayerController : Actor {
 				}
 			}
 		}
-		/*else {
+		else {
 			if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
-				if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0) {
-					WalkEast ();
+				if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0 && CanWalkTo (0, 1)) {
+					pathToTarget.Clear();
+					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
+					useOnArrival = false;
+					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
-				else if (Input.GetKeyDown(KeyCode.LeftArrow) && distance.x >= 0) {
-					WalkWest ();
+				else if (Input.GetKeyDown(KeyCode.LeftArrow) && distance.x >= 0 && CanWalkTo (0, -1)) {
+					pathToTarget.Clear();
+					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1].GridCoords);
+					useOnArrival = false;
+					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
 			}
-			else if (Mathf.Abs(distance.x) <= Mathf.Abs (distance.y)) {
+			else if (Mathf.Abs(distance.x) <= Mathf.Abs (distance.y) && CanWalkTo (1, 0)) {
 				if (Input.GetKeyDown(KeyCode.UpArrow) && distance.y < 0) {
-					WalkNorth ();
+					pathToTarget.Clear();
+					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column].GridCoords);
+					useOnArrival = false;
+					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
-				else if (Input.GetKeyDown(KeyCode.DownArrow) && distance.y >= 0) {
-					WalkSouth ();
+				else if (Input.GetKeyDown(KeyCode.DownArrow) && distance.y >= 0 && CanWalkTo (-1, 0)) {
+					pathToTarget.Clear();
+					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column].GridCoords);
+					useOnArrival = false;
+					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
 			}
-		}*/
+		}
 		
 		transform.Translate(distance);
 	}
@@ -333,9 +353,6 @@ public class PlayerController : Actor {
 	protected void OnUpdateUsingComponent() {
 		if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
 			currentSquare.Component.OnDeactivate(this);
-			if (currentSquare.Component is Restroom) {
-				((Restroom)(currentSquare.Component)).openAndCloseDoor();
-			}
 			ChangeState(ActorState.Upright);
 			
 			Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -348,9 +365,6 @@ public class PlayerController : Actor {
 		}
 		else if (Input.GetKeyDown(KeyCode.Space)) {
 			currentSquare.Component.OnDeactivate(this);
-			if (currentSquare.Component is Restroom) {
-				((Restroom)(currentSquare.Component)).openAndCloseDoor();
-			}
 			ChangeState(ActorState.Upright);
 		}
 		else if (currentSquare.Component) {				
@@ -420,7 +434,6 @@ public class PlayerController : Actor {
 			pathToTarget.Clear();
 			gridComponent.OnActivate(this);
 			if (gridComponent is Restroom) {
-				((Restroom)(gridComponent)).openAndCloseDoor();
 				ChangeState(ActorState.InRestroom);
 			}
 			else if (gridComponent is Chair) {

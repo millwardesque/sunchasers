@@ -59,6 +59,7 @@ public class Restroom : GridComponent {
 			audioSource.clip = OpenDoorAudio;
 			audioSource.Play();
 		}
+		openAndCloseDoor();
 	}
 
 	/// <summary>
@@ -69,5 +70,6 @@ public class Restroom : GridComponent {
 			audioSource.clip = ToiletFlushAudio;
 			audioSource.Play();
 		}
+		openAndCloseDoor();
 	}
 }
