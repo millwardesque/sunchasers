@@ -83,7 +83,7 @@ public class Actor : MonoBehaviour {
 	/// New state.
 	/// </param>
 	public virtual void ChangeState(ActorState newState) {
-		if (State == ActorState.Upright && newState == ActorState.InChair) {
+		if ((State == ActorState.Upright || State == ActorState.Walking) && newState == ActorState.InChair) {
 			CurrentSquare.Occupier = this;
 			transform.Translate(new Vector3(0.0f, 1.0f, 0.5f));
 		}

@@ -7,9 +7,8 @@ public class PlayerController : Actor {
 	private GameObject victoryText;
 	private GameObject defeatText;
 	private GameObject towel;
-
-	private GridCoordinates targetSquare = new GridCoordinates(-1, -1);	// Target square used when the user clicks a grid square.
-	private List<GridCoordinates> pathToTarget = null;	// A list of squares that lead to the target square.
+	
+	private List<GridCoordinates> pathToTarget = new List<GridCoordinates>();	// A list of squares that lead to the target square.
 	private bool useOnArrival = false;	// Flag that can be set to cause the player to automatically 'use' a grid square's component upon arrival.
 
 	private GameObject world;
@@ -82,9 +81,8 @@ public class PlayerController : Actor {
 		gameCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
 	
 		// Set the movement variables to their default state.
-		targetSquare = new GridCoordinates(-1, -1);
-		pathToTarget = null;
-		useOnArrival = true;
+		pathToTarget.Clear();
+		useOnArrival = false;
 	}
 	
 	/// <summary>
@@ -207,7 +205,7 @@ public class PlayerController : Actor {
 	protected void UpdateStats(float deltaTime) {
 		Bladder += BladderIncreaseRate * deltaTime;
 		Hunger += HungerIncreaseRate * deltaTime;
-		Relaxation -= RelaxationDecreaseRate * TdeltaTime;
+		Relaxation -= RelaxationDecreaseRate * deltaTime;
 	}
 
 	/// <summary>
@@ -219,41 +217,48 @@ public class PlayerController : Actor {
 		
 		if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
 			Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
-			targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition).GridCoords;
-			Debug.Log(string.Format("Nearest grid square is {0}", targetSquare));
-			
-			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare);
-			FindNextSquare();
-		}
-		else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-			WalkEast ();
-		}
-		else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-			WalkWest ();
-		}
-		else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-			WalkNorth ();
-		}
-		else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-			WalkSouth ();
-		}
-		else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
-			if (currentSquare.Component) {
-				if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
-					currentSquare.Component.OnActivate(this);
-					((Restroom)(currentSquare.Component)).openAndCloseDoor();
-					ChangeState(ActorState.InRestroom);
-				}
-				else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
-					currentSquare.Component.OnActivate(this);
-					ChangeState (ActorState.InChair);
-				}
-				else if (currentSquare.Component is SnackBar) {
-					currentSquare.Component.OnActivate(this);
-					ChangeState (ActorState.InSnackBar);	
-				}
+			GridSquare targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition);
+
+			ReplaceMovementQueue(movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare.GridCoords));
+			if (targetSquare.Component != null) {
+				useOnArrival = true;
 			}
 		}
+		else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+			if (CanWalkTo (0, 1)) {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
+				useOnArrival = false;
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+			if (CanWalkTo (0, -1))  {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1].GridCoords);
+				useOnArrival = false;
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.UpArrow)) {
+			if (CanWalkTo (1, 0)) {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[CurrentSquare.Row + 1][CurrentSquare.Column].GridCoords);
+				useOnArrival = false;
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.DownArrow)) {
+			if (CanWalkTo (-1, 0)) {
+				pathToTarget.Clear();
+				AppendMovementNode(movementGridScript.SquarePositions[CurrentSquare.Row - 1][CurrentSquare.Column].GridCoords);
+				useOnArrival = false;
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.Space)) {	// See if the player is trying to enter a building.
+			TryToUseComponent(currentSquare.Component);
+			useOnArrival = false;
+		}
+
+		// Find the next target to walk to.
+		FindNextSquare();
 	}
 
 	/// <summary>
@@ -269,30 +274,10 @@ public class PlayerController : Actor {
 			TryToConsume();
 			
 			// Allow player to walk without pausing at each square
-			if (pathToTarget != null && pathToTarget.Count > 0) {
+			if (pathToTarget.Count > 0) {
 				FindNextSquare();
 			}
-			else if (pathToTarget != null && pathToTarget.Count == 0) {
-				if (currentSquare.Component) {
-					if (currentSquare.Component is Restroom && !currentSquare.IsOccupied()) {
-						currentSquare.Component.OnActivate(this);
-						((Restroom)(currentSquare.Component)).openAndCloseDoor();
-						ChangeState(ActorState.InRestroom);
-					}
-					else if (currentSquare.Component is Chair && !currentSquare.IsOccupied()) {
-						currentSquare.Component.OnActivate(this);
-						ChangeState (ActorState.InChair);
-					}
-					else if (currentSquare.Component is SnackBar) {
-						currentSquare.Component.OnActivate(this);
-						ChangeState (ActorState.InSnackBar);	
-					}
-					else {
-						ChangeState(ActorState.Upright);
-					}
-				}
-			}
-			else if (Input.GetKey(KeyCode.RightArrow)) {
+			/*else if (Input.GetKey(KeyCode.RightArrow)) {
 				WalkEast ();
 				CancelAutoPathfind();
 			}
@@ -307,12 +292,20 @@ public class PlayerController : Actor {
 			else if (Input.GetKey(KeyCode.DownArrow)) {
 				WalkSouth ();
 				CancelAutoPathfind();
-			}
+			}*/
 			else {
-				ChangeState (ActorState.Upright);
+				if (useOnArrival) {
+					if (!TryToUseComponent(currentSquare.Component)) {
+						ChangeState (ActorState.Upright);
+					}
+					useOnArrival = false;
+				}
+				else {
+					ChangeState (ActorState.Upright);
+				}
 			}
 		}
-		else {
+		/*else {
 			if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
 				if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0) {
 					WalkEast ();
@@ -329,7 +322,7 @@ public class PlayerController : Actor {
 					WalkSouth ();
 				}
 			}
-		}
+		}*/
 		
 		transform.Translate(distance);
 	}
@@ -346,11 +339,12 @@ public class PlayerController : Actor {
 			ChangeState(ActorState.Upright);
 			
 			Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
-			targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition).GridCoords;
-			Debug.Log(string.Format("Nearest grid square is {0}", targetSquare));
+			GridSquare targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition);
 			
-			pathToTarget = movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare);
-			FindNextSquare();
+			ReplaceMovementQueue(movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare.GridCoords));
+			if (targetSquare.Component != null) {
+				useOnArrival = true;
+			}
 		}
 		else if (Input.GetKeyDown(KeyCode.Space)) {
 			currentSquare.Component.OnDeactivate(this);
@@ -417,6 +411,33 @@ public class PlayerController : Actor {
 	}
 
 	/// <summary>
+	/// Tries to use the current square's component.
+	/// </summary>
+	/// <returns><c>true</c>, if the squares component was successfully used, <c>false</c> otherwise.</returns>
+	/// <param name="gridComponent">Grid component to try to use.</param>
+	protected bool TryToUseComponent(GridComponent gridComponent) {
+		if (gridComponent != null && !currentSquare.IsOccupied()) {
+			pathToTarget.Clear();
+			gridComponent.OnActivate(this);
+			if (gridComponent is Restroom) {
+				((Restroom)(gridComponent)).openAndCloseDoor();
+				ChangeState(ActorState.InRestroom);
+			}
+			else if (gridComponent is Chair) {
+				ChangeState (ActorState.InChair);
+			}
+			else if (gridComponent  is SnackBar) {
+				ChangeState (ActorState.InSnackBar);	
+			}
+
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	/// <summary>
 	/// Tries to consume if the current square has a consumable attached.
 	/// </summary>
 	/// <returns><c>true</c>, if a consumable was used, <c>false</c> otherwise.</returns>
@@ -429,6 +450,29 @@ public class PlayerController : Actor {
 			GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 			CurrentSquare.Consumable = null;
 			Score.Add (new ScoreItem(50, "Item"));
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Helper function for determining if a player can walk to a square relative to his current position.
+	/// </summary>
+	/// <returns><c>true</c> if the player can walk to the specified location; otherwise, <c>false</c>.</returns>
+	/// <param name="deltaRow">The delta between the player's current row and the new row.</param>
+	/// <param name="deltaColumn">The delta between the player's current column and the new column.</param>
+	protected bool CanWalkTo(int deltaRow, int deltaColumn) {
+		int row = CurrentSquare.Row + deltaRow;
+		int column = CurrentSquare.Column + deltaColumn;
+
+		if (deltaRow == 1 && deltaColumn == 0) { // Moving north, make sure we don't have a chair in our way.
+			return (movementGridScript.IsTraversableSquare(row, column) && !movementGridScript.SquareHasChair(CurrentSquare.Row, CurrentSquare.Column));
+		}
+		else if (deltaRow == -1 && deltaColumn == 0) {	// Moving south, make sure we don't have a chair in our way.
+			return (movementGridScript.IsTraversableSquare(row, column) && !movementGridScript.SquareHasChair(row, column));
+		}
+		else {
+			return movementGridScript.IsTraversableSquare(row, column);
 		}
 	}
 
@@ -437,7 +481,7 @@ public class PlayerController : Actor {
 		int row = CurrentSquare.Row + 1;
 		int column = CurrentSquare.Column;
 		
-		if (movementGridScript.IsTraversableSquare(row, column) && !movementGridScript.SquareHasChair(CurrentSquare.Row, CurrentSquare.Column)) {
+		if (CanWalkTo(1, 0)) {
 			animWalkNorth();
 			CurrentSquare = movementGridScript.SquarePositions[row][column];
 			ChangeState(ActorState.Walking);
@@ -449,7 +493,7 @@ public class PlayerController : Actor {
 		int row = CurrentSquare.Row - 1;
 		int column = CurrentSquare.Column;
 		
-		if (movementGridScript.IsTraversableSquare(row, column) && !movementGridScript.SquareHasChair(row, column)) {
+		if (CanWalkTo(-1, 0)) {
 			animWalkSouth();
 			CurrentSquare = movementGridScript.SquarePositions[row][column];
 			ChangeState(ActorState.Walking);
@@ -459,7 +503,7 @@ public class PlayerController : Actor {
 	protected void WalkWest() {
 		SetSprite("walk-west-0");
 		
-		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column - 1)) {
+		if (CanWalkTo (0, -1)) {
 			animWalkWest ();
 			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1];
 			ChangeState(ActorState.Walking);
@@ -469,7 +513,7 @@ public class PlayerController : Actor {
 	protected void WalkEast() {
 		SetSprite("walk-east-0");
 		
-		if (movementGridScript.IsTraversableSquare(currentSquare.Row, currentSquare.Column + 1)) {
+		if (CanWalkTo (0, 1)) {
 			animWalkEast();
 			CurrentSquare = movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1];
 			ChangeState(ActorState.Walking);
@@ -481,18 +525,35 @@ public class PlayerController : Actor {
 		animIdle();
 	}
 
+	/// <summary>
+	/// Appends a GridCoordinates node to the movement queue.
+	/// </summary>
+	/// <param name="node">The GridCoordinates node to append.</param>
+	protected void AppendMovementNode(GridCoordinates node) {
+		pathToTarget.Add(node);
+	}
+
+	/// <summary>
+	/// Replaces the existing movement queue with a new queue.
+	/// </summary>
+	/// <param name="newQueue">New queue.</param>
+	protected void ReplaceMovementQueue(List<GridCoordinates> newQueue) {
+		if (newQueue != null) {
+			pathToTarget = newQueue;
+		}
+		else {
+			pathToTarget.Clear();
+		}
+	}
+
 	void CancelAutoPathfind() {
-		pathToTarget = null;
+		pathToTarget.Clear();
 	}
 
 	/// <summary>
 	/// Finds the next square the actor should move to.
 	/// </summary>
 	void FindNextSquare() {
-		if (null == pathToTarget) {
-			Debug.Log (string.Format ("Unable find path from {0} to {1}: {2}", CurrentSquare.GridCoords, targetSquare, movementGridScript.SquarePositions[targetSquare.Row][targetSquare.Column]));
-		}
-
 		if (pathToTarget.Count > 0) {
 			GridCoordinates nextSquare = pathToTarget[0];
 			pathToTarget.RemoveAt(0);
@@ -510,8 +571,6 @@ public class PlayerController : Actor {
 			else if (nextSquare.Row < CurrentSquare.Row) {
 				WalkSouth();
 			}
-
-			ChangeState(ActorState.Walking);
 		}
 	}
 }
