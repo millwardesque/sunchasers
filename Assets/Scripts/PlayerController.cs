@@ -277,6 +277,16 @@ public class PlayerController : Actor {
 			if (pathToTarget.Count > 0) {
 				FindNextSquare();
 			}
+			else if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+				Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
+				GridSquare targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition);
+
+				ReplaceMovementQueue(movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare.GridCoords));
+				if (targetSquare.Component != null) {
+					useOnArrival = true;
+				}
+				FindNextSquare ();
+			}
 			else if (Input.GetKey(KeyCode.RightArrow) && CanWalkTo (0, 1)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
@@ -314,7 +324,16 @@ public class PlayerController : Actor {
 			}
 		}
 		else {
-			if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
+			if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+				Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
+				GridSquare targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition);
+				
+				ReplaceMovementQueue(movementGridScript.FindPathToSquare(CurrentSquare.GridCoords, targetSquare.GridCoords));
+				if (targetSquare.Component != null) {
+					useOnArrival = true;
+				}
+			}
+			else if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
 				if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0 && CanWalkTo (0, 1)) {
 					pathToTarget.Clear();
 					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
