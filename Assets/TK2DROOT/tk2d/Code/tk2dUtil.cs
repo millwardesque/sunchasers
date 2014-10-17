@@ -63,6 +63,9 @@ public static class tk2dUtil {
 
 	public static Mesh CreateMesh() {
 		Mesh mesh = new Mesh();
+#if !UNITY_3_5
+		mesh.MarkDynamic();
+#endif
 #if UNITY_EDITOR && !(UNITY_3_5 || UNITY_4_0 || UNITY_4_0_1 || UNITY_4_1 || UNITY_4_2)
 		if (!Application.isPlaying && undoEnabled) {
 			UnityEditor.Undo.RegisterCreatedObjectUndo(mesh, label);

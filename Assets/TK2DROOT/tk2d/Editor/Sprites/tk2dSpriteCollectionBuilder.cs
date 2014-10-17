@@ -174,6 +174,11 @@ public class tk2dSpriteCollectionBuilder
 
 	static void PadTexture(Texture2D tex, int pad, tk2dSpriteCollectionDefinition.Pad padMode)
 	{
+		// Default is now extend
+		if (padMode == tk2dSpriteCollectionDefinition.Pad.Default) {
+			padMode = tk2dSpriteCollectionDefinition.Pad.Extend;
+		}
+
 		Color bgColor = new Color(0,0,0,0);
 		Color c0 = bgColor, c1 = bgColor;
 		for (int y = 0; y < pad; ++y)
@@ -182,6 +187,7 @@ public class tk2dSpriteCollectionBuilder
 			{
 				switch (padMode) {
 					case tk2dSpriteCollectionDefinition.Pad.Extend: c0 = tex.GetPixel(x, pad); c1 = tex.GetPixel(x, tex.height - 1 - pad); break;
+					case tk2dSpriteCollectionDefinition.Pad.TileX:
 					case tk2dSpriteCollectionDefinition.Pad.TileXY: c1 = tex.GetPixel(x, pad); c0 = tex.GetPixel(x, tex.height - 1 - pad); break;
 				}
 				tex.SetPixel(x, y, c0);
@@ -194,6 +200,7 @@ public class tk2dSpriteCollectionBuilder
 			{
 				switch (padMode) {
 					case tk2dSpriteCollectionDefinition.Pad.Extend: c0 = tex.GetPixel(pad, y); c1 = tex.GetPixel(tex.width - 1 - pad, y); break;
+					case tk2dSpriteCollectionDefinition.Pad.TileY:
 					case tk2dSpriteCollectionDefinition.Pad.TileXY: c1 = tex.GetPixel(pad, y); c0 = tex.GetPixel(tex.width - 1 - pad, y); break;
 				}
 				tex.SetPixel(x, y, c0);
@@ -665,6 +672,7 @@ public class tk2dSpriteCollectionBuilder
 			gen.spriteCollection.textures = new Texture2D[0];
 			gen.spriteCollection.pngTextures = new TextAsset[0];
 
+			gen.spriteCollection.loadable = gen.loadable;
 			gen.spriteCollection.hasPlatformData = true;
 			gen.spriteCollection.spriteCollectionPlatforms = platformNames.ToArray();
 			gen.spriteCollection.spriteCollectionPlatformGUIDs = platformGUIDs.ToArray();
@@ -740,11 +748,17 @@ public class tk2dSpriteCollectionBuilder
 			gen.globalTextureRescale = 1;
 		}
 
+		// Is this a linked collection? If so, validate
+		tk2dEditor.SpriteCollectionBuilder.LinkBuilder.ValidateLinkedSpriteCollection(gen);
+
 		Dictionary<Texture2D, Texture2D> extractRegionCache = new Dictionary<Texture2D, Texture2D>();
 		sourceTextures = new Texture2D[gen.textureParams.Length];
 		for (int i = 0; i < gen.textureParams.Length; ++i)
 		{
 			var param = gen.textureParams[i];
+
+			tk2dEditor.SpriteCollectionBuilder.LinkBuilder.ValidateTextureParam(gen, i);
+
 			if (param.extractRegion && param.texture != null)
 			{
 				Texture2D srcTex = param.texture;
@@ -944,7 +958,7 @@ public class tk2dSpriteCollectionBuilder
 					SpriteLut lut = new SpriteLut();
 
 					int cy = (int)( (font.flipTextureY ? c.y : (fontInfo.scaleH - c.y - c.height)) * texScale );
-					Texture2D dest = ProcessTexture(gen, false, tk2dSpriteCollectionDefinition.Pad.Default, false, true, false,
+					Texture2D dest = ProcessTexture(gen, false, tk2dSpriteCollectionDefinition.Pad.BlackZeroAlpha, false, true, false,
 						(rescaledTexture != null) ? rescaledTexture : font.texture, 
 						(int)(c.x * texScale), cy, 
 						(int)(c.width * texScale), (int)(c.height * texScale), 
@@ -1049,7 +1063,8 @@ public class tk2dSpriteCollectionBuilder
 		int atlasHeight = forceAtlasSize?gen.forcedTextureHeight:gen.maxTextureSize;
 		bool forceSquareAtlas = forceAtlasSize?false:gen.forceSquareAtlas;
 		bool allowFindingOptimalSize = !forceAtlasSize;
-		tk2dEditor.Atlas.Builder atlasBuilder = new tk2dEditor.Atlas.Builder(atlasWidth, atlasHeight, gen.allowMultipleAtlases?64:1, allowFindingOptimalSize, forceSquareAtlas);
+		bool allowRotation = !gen.disableRotation;
+		tk2dEditor.Atlas.Builder atlasBuilder = new tk2dEditor.Atlas.Builder(atlasWidth, atlasHeight, gen.allowMultipleAtlases?64:1, allowFindingOptimalSize, forceSquareAtlas, allowRotation);
 		if (textureList.Length > 0)
 		{
 			foreach (Texture2D currTexture in textureList)
@@ -1221,14 +1236,20 @@ public class tk2dSpriteCollectionBuilder
 		if (!gen.allowMultipleAtlases && gen.altMaterials.Length > 1)
 		{
 			coll.materials = new Material[gen.altMaterials.Length];
-	        for (int i = 0; i < gen.altMaterials.Length; ++i)
+			coll.materialPngTextureId = new int[gen.altMaterials.Length];
+	        for (int i = 0; i < gen.altMaterials.Length; ++i) {
 				coll.materials[i] = gen.altMaterials[i];
+				coll.materialPngTextureId[i] = 0;
+			}
 		}
 		else
 		{
 			coll.materials = new Material[gen.atlasMaterials.Length];
-	        for (int i = 0; i < gen.atlasMaterials.Length; ++i)
+			coll.materialPngTextureId = new int[gen.atlasMaterials.Length];
+	        for (int i = 0; i < gen.atlasMaterials.Length; ++i) {
 				coll.materials[i] = gen.atlasMaterials[i];
+				coll.materialPngTextureId[i] = i;
+			}
 		}
 		
 		// Delete unused atlas textures & materials
@@ -1295,8 +1316,8 @@ public class tk2dSpriteCollectionBuilder
 					fontSpriteLut.Add(v);
 			}
 			
-			fontInfo.scaleW = coll.textures[0].width;
-			fontInfo.scaleH = coll.textures[0].height;
+			fontInfo.scaleW = atlasData[0].width;
+			fontInfo.scaleH = atlasData[0].height;
 			
 			// Set material
 			if (font.useGradient && font.gradientTexture != null && font.gradientCount > 0)
@@ -1375,12 +1396,13 @@ public class tk2dSpriteCollectionBuilder
 
 		var index = tk2dEditorUtility.GetOrCreateIndex();
 		index.AddSpriteCollectionData(gen.spriteCollection);
+
 		EditorUtility.SetDirty(gen.spriteCollection);
 		EditorUtility.SetDirty(gen);
 
 		sourceTextures = null; // need to clear, its static
 		currentBuild = null;
-		
+
 		tk2dEditorUtility.GetOrCreateIndex().AddSpriteCollectionData(gen.spriteCollection);
 		tk2dEditorUtility.CommitIndex();
 	
@@ -1390,12 +1412,23 @@ public class tk2dSpriteCollectionBuilder
 			tk2dSystemUtility.UpdateAssetName(gen.spriteCollection, gen.assetName);
 		}
 		
+		// build linked collections
+		tk2dEditor.SpriteCollectionBuilder.LinkBuilder.Build(gen);
+
         // refresh existing
 		gen.spriteCollection.ResetPlatformData();
 		RefreshExistingAssets(gen.spriteCollection);
+
+		// post build callback
+		if (OnPostBuildSpriteCollection != null) {
+			OnPostBuildSpriteCollection(gen);
+		}
 		
 		return true;
     }
+
+    // Hook into this to be notified when a sprite collection is built
+    public static event System.Action<tk2dSpriteCollection> OnPostBuildSpriteCollection = null;
 	
 	// pass null to rebuild everything
 	static void RefreshExistingAssets(tk2dSpriteCollectionData spriteCollectionData)
@@ -1457,7 +1490,8 @@ public class tk2dSpriteCollectionBuilder
 
 		if (importer.filterMode != gen.filterMode) 
 		{ 
-			importer.filterMode = gen.filterMode; textureDirty = true; 
+			importer.filterMode = gen.filterMode; 
+			textureDirty = true; 
 		}
 
 		if (!gen.userDefinedTextureSettings)
@@ -1466,6 +1500,13 @@ public class tk2dSpriteCollectionBuilder
 			if (importer.mipmapEnabled != gen.mipmapEnabled) { importer.mipmapEnabled = gen.mipmapEnabled; textureDirty = true; }
 			if (importer.anisoLevel != gen.anisoLevel) { importer.anisoLevel = gen.anisoLevel; textureDirty = true; }
 		}
+
+#if !(UNITY_3_5 || UNITY_4_0 || UNITY_4_0_1 || UNITY_4_1)
+        if (importer.alphaIsTransparency) {
+        	importer.alphaIsTransparency = false;
+        	textureDirty = true;
+        }
+#endif
 
 		if (textureDirty)
 		{
@@ -1907,7 +1948,7 @@ public class tk2dSpriteCollectionBuilder
 			else
 			{
 				// make sure its not overrun, can happen when refs are cleared
-				thisTexParam.materialId = Mathf.Min( thisTexParam.materialId, gen.atlasMaterials.Length - 1);
+				thisTexParam.materialId = Mathf.Min( thisTexParam.materialId, gen.altMaterials.Length - 1);
 				coll.spriteDefinitions[i].material = gen.altMaterials[thisTexParam.materialId];
 				coll.spriteDefinitions[i].materialId = thisTexParam.materialId;
 				
@@ -2141,6 +2182,37 @@ public class tk2dSpriteCollectionBuilder
 			def.edgeCollider2D = edgeCollider2D.ToArray();
 			def.polygonCollider2D = polygonCollider2D.ToArray();
 		}
+		else if (colliderType == tk2dSpriteCollectionDefinition.ColliderType.Advanced) {
+			List<tk2dSpriteColliderDefinition> colliders = new List<tk2dSpriteColliderDefinition>();
+			foreach (tk2dSpriteCollectionDefinition.ColliderData rawCollider in src.colliderData) {
+				Vector3 colliderOrigin = new Vector3(rawCollider.origin.x * src.scale.x, (texHeight - rawCollider.origin.y) * src.scale.y, 0) * scale + origin;
+				tk2dSpriteColliderDefinition gameColliderDef = null;
+
+				switch (rawCollider.type) {
+					case tk2dSpriteCollectionDefinition.ColliderData.Type.Box: {
+						gameColliderDef = new tk2dSpriteColliderDefinition( tk2dSpriteColliderDefinition.Type.Box, colliderOrigin, rawCollider.angle );
+						Vector3 size = Vector3.Scale( rawCollider.size, src.scale ) * scale;
+						size.z = gen.physicsDepth;
+						gameColliderDef.vectors = new Vector3[] { size };
+						break;
+					}
+					case tk2dSpriteCollectionDefinition.ColliderData.Type.Circle: {
+						float radius = rawCollider.size.x * Mathf.Max( Mathf.Abs(src.scale.x * scale), Mathf.Abs(src.scale.y * scale) );
+						gameColliderDef = new tk2dSpriteColliderDefinition( tk2dSpriteColliderDefinition.Type.Circle, colliderOrigin, rawCollider.angle );
+						gameColliderDef.floats = new float[] { radius };
+						gameColliderDef.origin = colliderOrigin;
+						gameColliderDef.angle = 0;
+						break;
+					}
+				}
+
+				if (gameColliderDef != null) {
+					gameColliderDef.name = rawCollider.name;
+					colliders.Add(gameColliderDef);
+				}
+			}
+			def.customColliders = colliders.ToArray();
+		}
 		else if (colliderType == tk2dSpriteCollectionDefinition.ColliderType.ForceNone)
 		{
 			def.colliderType = tk2dSpriteDefinition.ColliderType.None;
@@ -2151,3 +2223,4 @@ public class tk2dSpriteCollectionBuilder
 		}
 	}
 }
+

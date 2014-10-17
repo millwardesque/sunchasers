@@ -45,7 +45,7 @@ public class tk2dUIItemEditor : Editor
         methodBindingUtil.MethodBinding( "On Release", typeof(tk2dUIItem), btn.sendMessageTarget, ref btn.SendMessageOnReleaseMethodName );
         methodBindingUtil.EndMessageGUI();
 
-        if (btn.collider != null) {
+        if (btn.GetComponent<Collider>() != null) {
             GUILayout.Label("Collider", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
 
@@ -109,7 +109,7 @@ public class tk2dUIItemEditor : Editor
     }
 
     //creates tk2dUIManager
-    [MenuItem("GameObject/Create Other/tk2d/UI Manager", false, 13950)]
+    [MenuItem(tk2dMenu.createBase + "UI Manager", false, 13950)]
     static void CreateUIManager()
     {
         GameObject go = tk2dEditorUtility.CreateGameObjectInScene("tk2dUIManager");

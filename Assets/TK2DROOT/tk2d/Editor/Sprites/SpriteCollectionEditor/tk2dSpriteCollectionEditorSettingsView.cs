@@ -280,6 +280,56 @@ namespace tk2dEditor.SpriteCollectionEditor
 			EndHeader();
 		}
 
+		string linkedCollectionName = "";
+
+		void DrawLinked() {
+			BeginHeader("Linked Collections");
+
+			if (!SpriteCollection.disableTrimming) {
+				EditorGUILayout.HelpBox("Linked collections are only supported when trimming is disabled.", SpriteCollection.linkedSpriteCollections.Count == 0 ? MessageType.Info : MessageType.Error);
+				return;
+			}
+
+			GUILayout.BeginHorizontal();
+			linkedCollectionName = EditorGUILayout.TextField(linkedCollectionName, GUILayout.ExpandWidth(true));
+			GUI.enabled = linkedCollectionName.Trim().Length > 0;
+			if (GUILayout.Button("Add")) {
+				bool allowAdd = true;
+				foreach (var v in SpriteCollection.linkedSpriteCollections) {
+					if (v.name == linkedCollectionName) {
+						allowAdd = false;
+						break;
+					}
+				}
+				if (!allowAdd) {
+					EditorUtility.DisplayDialog("Add Linked Collection", "Unable to add linked collection", "Ok");
+				}
+				else {
+					tk2dLinkedSpriteCollection s = new tk2dLinkedSpriteCollection();
+					s.name = linkedCollectionName;
+					linkedCollectionName = "";
+					SpriteCollection.linkedSpriteCollections.Add(s);
+				}
+			}
+			GUI.enabled = true;
+			GUILayout.EndHorizontal();
+
+			int toDelete = -1;
+			for (int i = 0; i < SpriteCollection.linkedSpriteCollections.Count; ++i) {
+				tk2dLinkedSpriteCollection lsc = SpriteCollection.linkedSpriteCollections[i];
+				GUILayout.BeginHorizontal();
+				GUILayout.Label(lsc.name);
+				GUILayout.FlexibleSpace();
+				if (GUILayout.Button("X", EditorStyles.miniButton)) {
+					toDelete = i;
+				}
+				GUILayout.EndHorizontal();
+			}
+
+			if (toDelete != -1) {
+				SpriteCollection.linkedSpriteCollections.RemoveAt(toDelete);
+			}
+		}		
 
 		void DrawPlatforms()
 		{
@@ -364,6 +414,7 @@ namespace tk2dEditor.SpriteCollectionEditor
 			else if (SpriteCollection.atlasFormat == tk2dSpriteCollection.AtlasFormat.Png) {
 				tk2dGuiUtility.InfoBox("Png atlases will decrease on disk game asset sizes, at the expense of increased load times.",
 					tk2dGuiUtility.WarningLevel.Warning);
+				SpriteCollection.textureCompression = (tk2dSpriteCollection.TextureCompression)EditorGUILayout.EnumPopup("Compression", SpriteCollection.textureCompression);
 				SpriteCollection.filterMode = (FilterMode)EditorGUILayout.EnumPopup("Filter Mode", SpriteCollection.filterMode);
 				SpriteCollection.mipmapEnabled = EditorGUILayout.Toggle("Mip Maps", SpriteCollection.mipmapEnabled);
 			}
@@ -401,6 +452,8 @@ namespace tk2dEditor.SpriteCollectionEditor
 
 			SpriteCollection.premultipliedAlpha = EditorGUILayout.Toggle("Premultiplied Alpha", SpriteCollection.premultipliedAlpha);
 			SpriteCollection.disableTrimming = EditorGUILayout.Toggle("Disable Trimming", SpriteCollection.disableTrimming);
+			GUIContent gc = new GUIContent("Disable rotation", "Disable rotation of sprites in atlas. Use this if you need consistent UV direction for shader special effects.");
+			SpriteCollection.disableRotation = EditorGUILayout.Toggle(gc, SpriteCollection.disableRotation);
 			SpriteCollection.normalGenerationMode = (tk2dSpriteCollection.NormalGenerationMode)EditorGUILayout.EnumPopup("Normal Generation", SpriteCollection.normalGenerationMode);
 
 			EndHeader();
@@ -560,6 +613,8 @@ namespace tk2dEditor.SpriteCollectionEditor
 			DrawAtlasSettings();
 
 			DrawSystemSettings();
+
+			DrawLinked();
 
 			DrawPlatforms();
 			

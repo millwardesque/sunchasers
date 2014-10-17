@@ -6,8 +6,8 @@ using System.IO;
 [InitializeOnLoad]
 public static class tk2dEditorUtility
 {
-	public static double version = 2.3;
-	public static int releaseId = 0; // < -10001 = alpha 1, other negative = beta release, 0 = final, positive = final hotfix
+	public static double version = 2.5;
+	public static int releaseId = -2; // < -10001 = alpha 1, other negative = beta release, 0 = final, positive = final hotfix
 
 	static tk2dEditorUtility() {
 #if UNITY_3_5 || UNITY_4_0 || UNITY_4_0_1 || UNITY_4_1 || UNITY_4_2
@@ -369,7 +369,11 @@ public static class tk2dEditorUtility
 		Selection.objects = new Object[0];
 		
 		System.GC.Collect();
+#if (UNITY_3_5 || UNITY_4_0 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5 || UNITY_4_6 || UNITY_4_7 || UNITY_4_8 || UNITY_4_9)
 		EditorUtility.UnloadUnusedAssets();
+#else
+		EditorUtility.UnloadUnusedAssetsImmediate();
+#endif
 		
 		index = null;
 		
@@ -380,7 +384,11 @@ public static class tk2dEditorUtility
 	{
 		System.GC.Collect();
 		System.GC.WaitForPendingFinalizers();
+#if (UNITY_3_5 || UNITY_4_0 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5 || UNITY_4_6 || UNITY_4_7 || UNITY_4_8 || UNITY_4_9)
 		EditorUtility.UnloadUnusedAssets();
+#else
+		EditorUtility.UnloadUnusedAssetsImmediate();
+#endif
 	}
 
 	public static void DeleteAsset(UnityEngine.Object obj)
@@ -392,6 +400,11 @@ public static class tk2dEditorUtility
 	public static bool IsPrefab(Object obj)
 	{
 		return (PrefabUtility.GetPrefabType(obj) == PrefabType.Prefab);
+	}
+
+	public static bool IsEditable(UnityEngine.Object obj) {
+    	MonoBehaviour mb = obj as MonoBehaviour;
+    	return (mb && (mb.gameObject.hideFlags & HideFlags.NotEditable) == 0);
 	}
 
 	public static void SetGameObjectActive(GameObject go, bool active)
@@ -440,6 +453,9 @@ public static class tk2dEditorUtility
 	}
 
 	public static string SortingLayerNamePopup( string label, string value ) {
+		if (value == "") {
+			value = "Default";
+		}
 		string[] names = GetSortingLayerNames();
 		if (names.Length == 0) {
 			return EditorGUILayout.TextField(label, value);			
@@ -458,7 +474,7 @@ public static class tk2dEditorUtility
 	}
 #endif
 
-    [MenuItem("GameObject/Create Other/tk2d/Empty GameObject", false, 55000)]
+    [MenuItem(tk2dMenu.createBase + "Empty GameObject", false, 55000)]
     static void DoCreateEmptyGameObject()
     {
 		GameObject go = tk2dEditorUtility.CreateGameObjectInScene("GameObject");

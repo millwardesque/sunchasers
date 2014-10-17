@@ -429,7 +429,14 @@ public class tk2dUIScrollableArea : MonoBehaviour
                     swipeScrollingContentDestLocalPos.y = destValue;
                 }
 
-                newPercent = destValue / (contentLength - visibleAreaLength);
+                if (contentLength - visibleAreaLength > Mathf.Epsilon) 
+                {
+                    newPercent = destValue / (contentLength - visibleAreaLength);
+                }
+                else 
+                {
+                    newPercent = 0;
+                }                    
             }
             else //background button not down
             {

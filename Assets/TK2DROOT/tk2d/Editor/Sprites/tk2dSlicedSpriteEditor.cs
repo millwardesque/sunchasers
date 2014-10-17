@@ -18,9 +18,9 @@ class tk2dSlicedSpriteEditor : tk2dSpriteEditor
 		tk2dSlicedSprite sprite = (tk2dSlicedSprite)target;
 		base.OnInspectorGUI();
 		
-		if (sprite.Collection == null)
+		if (sprite.Collection == null) {
 			return;
-
+		}
 		
 		var spriteData = sprite.GetCurrentSpriteDef();
 		if (spriteData == null) {
@@ -144,7 +144,9 @@ class tk2dSlicedSpriteEditor : tk2dSpriteEditor
 	}
 
 	public new void OnSceneGUI() {
-		if (tk2dPreferences.inst.enableSpriteHandles == false) return;
+		if (tk2dPreferences.inst.enableSpriteHandles == false || !tk2dEditorUtility.IsEditable(target)) {
+			return;
+		}
 
 		tk2dSlicedSprite spr = (tk2dSlicedSprite)target;
 		var sprite = spr.CurrentSprite;
@@ -200,7 +202,7 @@ class tk2dSlicedSpriteEditor : tk2dSpriteEditor
     	}
 	}
 
-	[MenuItem("GameObject/Create Other/tk2d/Sliced Sprite", false, 12901)]
+	[MenuItem(tk2dMenu.createBase + "Sliced Sprite", false, 12901)]
 	static void DoCreateSlicedSpriteObject()
 	{
 		tk2dSpriteGuiUtility.GetSpriteCollectionAndCreate( (sprColl) => {
