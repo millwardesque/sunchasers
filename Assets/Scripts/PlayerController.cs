@@ -215,7 +215,7 @@ public class PlayerController : Actor {
 		UpdateStats(Time.deltaTime);
 		TryToConsume();
 		
-		if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+		if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject()) {
 			Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
 			GridSquare targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition);
 
@@ -277,7 +277,7 @@ public class PlayerController : Actor {
 			if (pathToTarget.Count > 0) {
 				FindNextSquare();
 			}
-			else if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+			else if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject()) {
 				Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
 				GridSquare targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition);
 
@@ -324,7 +324,7 @@ public class PlayerController : Actor {
 			}
 		}
 		else {
-			if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+			if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject()) {
 				Vector3 worldClickPosition = gameCamera.ScreenToWorldPoint(Input.mousePosition);
 				GridSquare targetSquare = movementGridScript.GetSquareFromPosition(worldClickPosition);
 				
@@ -370,7 +370,7 @@ public class PlayerController : Actor {
 	/// Called in the Update function if the user is using a component like a chair, the washroom, or snackbar.
 	/// </summary>
 	protected void OnUpdateUsingComponent() {
-		if (Input.GetMouseButtonUp(0) && !EventSystemManager.currentSystem.IsPointerOverEventSystemObject()) {
+		if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject()) {
 			currentSquare.Component.OnDeactivate(this);
 			ChangeState(ActorState.Upright);
 			
