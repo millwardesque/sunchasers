@@ -3,6 +3,21 @@ using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// "Target changed due to tap" message.
+/// </summary>
+public class TargetChangeFromTapMessage : Message {
+	public GridSquare newTarget;
+	
+	public TargetChangeFromTapMessage(GameObject messageSource, string messageName, GridSquare newTarget) : base(messageSource, messageName, "") {
+		this.newTarget = newTarget;
+	}
+	
+	public override string ToString () {
+		return string.Format("Name: {0} Target: {1} From: {2} ", MessageName, newTarget, MessageSource);
+	}
+}
+
 public class PlayerController : Actor {
 	private GameObject victoryText;
 	private GameObject defeatText;
@@ -223,6 +238,7 @@ public class PlayerController : Actor {
 			if (targetSquare.Component != null) {
 				useOnArrival = true;
 			}
+			MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
 		}
 		else if (Input.GetKeyDown(KeyCode.RightArrow)) {
 			if (CanWalkTo (0, 1)) {
@@ -285,6 +301,7 @@ public class PlayerController : Actor {
 				if (targetSquare.Component != null) {
 					useOnArrival = true;
 				}
+				MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
 				FindNextSquare ();
 			}
 			else if (Input.GetKey(KeyCode.RightArrow) && CanWalkTo (0, 1)) {
@@ -332,6 +349,7 @@ public class PlayerController : Actor {
 				if (targetSquare.Component != null) {
 					useOnArrival = true;
 				}
+				MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
 			}
 			else if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
 				if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0 && CanWalkTo (0, 1)) {
@@ -381,6 +399,7 @@ public class PlayerController : Actor {
 			if (targetSquare.Component != null) {
 				useOnArrival = true;
 			}
+			MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
 		}
 		else if (Input.GetKeyDown(KeyCode.Space)) {
 			currentSquare.Component.OnDeactivate(this);
