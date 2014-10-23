@@ -238,12 +238,16 @@ public class PlayerController : Actor {
 			if (targetSquare.Component != null) {
 				useOnArrival = true;
 			}
-			MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
+
+			if (pathToTarget.Count > 0) {
+				NotifyOfTargetChange(targetSquare);
+			}
 		}
 		else if (Input.GetKeyDown(KeyCode.RightArrow)) {
 			if (CanWalkTo (0, 1)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
+				NotifyOfTargetChange(null);
 				useOnArrival = false;
 			}
 		}
@@ -251,6 +255,7 @@ public class PlayerController : Actor {
 			if (CanWalkTo (0, -1))  {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1].GridCoords);
+				NotifyOfTargetChange(null);
 				useOnArrival = false;
 			}
 		}
@@ -258,6 +263,7 @@ public class PlayerController : Actor {
 			if (CanWalkTo (1, 0)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[CurrentSquare.Row + 1][CurrentSquare.Column].GridCoords);
+				NotifyOfTargetChange(null);
 				useOnArrival = false;
 			}
 		}
@@ -265,6 +271,7 @@ public class PlayerController : Actor {
 			if (CanWalkTo (-1, 0)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[CurrentSquare.Row - 1][CurrentSquare.Column].GridCoords);
+				NotifyOfTargetChange(null);
 				useOnArrival = false;
 			}
 		}
@@ -301,31 +308,39 @@ public class PlayerController : Actor {
 				if (targetSquare.Component != null) {
 					useOnArrival = true;
 				}
-				MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
+
+				if (pathToTarget.Count > 0) {
+					NotifyOfTargetChange(targetSquare);
+				}
+
 				FindNextSquare ();
 			}
 			else if (Input.GetKey(KeyCode.RightArrow) && CanWalkTo (0, 1)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
 				useOnArrival = false;
+				NotifyOfTargetChange(null);
 				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 			}
 			else if (Input.GetKey(KeyCode.LeftArrow) && CanWalkTo (0, -1)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1].GridCoords);
 				useOnArrival = false;
+				NotifyOfTargetChange(null);
 				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 			}
 			else if (Input.GetKey(KeyCode.UpArrow) && CanWalkTo (1, 0)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column].GridCoords);
 				useOnArrival = false;
+				NotifyOfTargetChange(null);
 				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 			}
 			else if (Input.GetKey(KeyCode.DownArrow) && CanWalkTo (-1, 0)) {
 				pathToTarget.Clear();
 				AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column].GridCoords);
 				useOnArrival = false;
+				NotifyOfTargetChange(null);
 				FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 			}
 			else {
@@ -338,6 +353,7 @@ public class PlayerController : Actor {
 				else {
 					ChangeState (ActorState.Upright);
 				}
+				NotifyOfTargetChange(null);
 			}
 		}
 		else {
@@ -349,19 +365,21 @@ public class PlayerController : Actor {
 				if (targetSquare.Component != null) {
 					useOnArrival = true;
 				}
-				MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
+				NotifyOfTargetChange(targetSquare);
 			}
 			else if (Mathf.Abs(distance.x) > Mathf.Abs (distance.y)) {	// If the player is moving horizontally, check for a direction reversal
 				if (Input.GetKeyDown(KeyCode.RightArrow) && distance.x < 0 && CanWalkTo (0, 1)) {
 					pathToTarget.Clear();
 					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column + 1].GridCoords);
 					useOnArrival = false;
+					NotifyOfTargetChange(null);
 					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
 				else if (Input.GetKeyDown(KeyCode.LeftArrow) && distance.x >= 0 && CanWalkTo (0, -1)) {
 					pathToTarget.Clear();
 					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row][currentSquare.Column - 1].GridCoords);
 					useOnArrival = false;
+					NotifyOfTargetChange(null);
 					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
 			}
@@ -370,12 +388,14 @@ public class PlayerController : Actor {
 					pathToTarget.Clear();
 					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row + 1][currentSquare.Column].GridCoords);
 					useOnArrival = false;
+					NotifyOfTargetChange(null);
 					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
 				else if (Input.GetKeyDown(KeyCode.DownArrow) && distance.y >= 0 && CanWalkTo (-1, 0)) {
 					pathToTarget.Clear();
 					AppendMovementNode(movementGridScript.SquarePositions[currentSquare.Row - 1][currentSquare.Column].GridCoords);
 					useOnArrival = false;
+					NotifyOfTargetChange(null);
 					FindNextSquare();	// Immediately fetch the next square to avoid a 1-frame pause while the actor switches to the upright state.
 				}
 			}
@@ -399,7 +419,10 @@ public class PlayerController : Actor {
 			if (targetSquare.Component != null) {
 				useOnArrival = true;
 			}
-			MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", targetSquare));
+
+			if (pathToTarget.Count > 0) {
+				NotifyOfTargetChange(targetSquare);
+			}
 		}
 		else if (Input.GetKeyDown(KeyCode.Space)) {
 			currentSquare.Component.OnDeactivate(this);
@@ -623,5 +646,9 @@ public class PlayerController : Actor {
 				WalkSouth();
 			}
 		}
+	}
+
+	void NotifyOfTargetChange(GridSquare square) {
+		MessageManager.Instance.SendToListeners(new TargetChangeFromTapMessage(gameObject, "TargetChangeFromTap", square));
 	}
 }
