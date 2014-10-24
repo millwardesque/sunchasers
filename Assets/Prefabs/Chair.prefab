@@ -94,7 +94,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EntryPoints: []
   BladderIncreaseRate: 3
-  RelaxationIncreaseRate: 2.5
+  RelaxationIncreaseRate: 2.5999999
   HungerIncreaseRate: 3
 --- !u!1001 &100100000
 Prefab:

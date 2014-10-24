@@ -523,7 +523,6 @@ public class PlayerController : Actor {
 			
 			GameObject.Destroy(CurrentSquare.Consumable.gameObject);
 			CurrentSquare.Consumable = null;
-			Score.Add (new ScoreItem(50, "Item"));
 			return true;
 		}
 		return false;

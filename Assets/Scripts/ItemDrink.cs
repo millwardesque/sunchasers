@@ -5,14 +5,17 @@ public class ItemDrink : GridConsumable {
 	public float BladderChange= 10.0f;
 	public float RelaxationChange = 15.0f;
 	public float HungerChange = -5.0f;
-
-	private PlayerController player;
+	
+	private PlayerController player = null;
 
 	/// <summary>
 	/// GridConsumable's OnStart hook.
 	/// </summary>
 	protected override void OnStart() {
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+		if (player == null) {
+			Debug.LogError("Unable to start drink item: Unable to find GameObject with Player tag, or Player GameObject doesn't have PlayerController component.");
+		}
 	}
 	
 	/// <summary>
@@ -25,5 +28,7 @@ public class ItemDrink : GridConsumable {
 		player.Relaxation += RelaxationChange;
 		player.Bladder += BladderChange;
 		player.Hunger += HungerChange;
+
+		base.OnUse ();
 	}
 }

@@ -111,8 +111,9 @@ MonoBehaviour:
   Location:
     Row: 0
     Column: 8
-  BladderChange: 10
-  RelaxationChange: 15
+  ScoreValue: 25
+  BladderChange: 7
+  RelaxationChange: 10
   HungerChange: -5
 --- !u!1001 &100100000
 Prefab:
